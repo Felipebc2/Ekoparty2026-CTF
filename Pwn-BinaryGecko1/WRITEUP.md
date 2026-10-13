@@ -6,100 +6,102 @@
 
 </div>
 
+<p align="center"><b>English</b> · <a href="WRITEUP.es.md">Español</a> · <a href="WRITEUP.pt-BR.md">Português (BR)</a></p>
+
 # First Chall by Binary Gecko — PWN · 200 pts · 🟢 EASY
 
-- **Status:** ✅ RESOLVIDO — flag obtida por decrypt offline do blob embarcado na DLL vazada da memória.
+- **Status:** ✅ SOLVED — flag obtained via offline decrypt of the blob embedded in the DLL leaked from memory.
 - **Flag:** `HIK_GECKO2026_CHALLENGE1_96edd2f20231e4e648cbddd5f29e5d88`
-- **Flag format:** `HIK_[texto]_[md5]`
-- **Acesso:** `nc <IP> <PORT>` (TCP cru, Windows Server 2022 em AWS eu-central-1; restart periódico) / HTTP `<IP>:8080` serve só `gecko2026.exe`
-- **Enunciado:** *(não transcrito nas notas da sessão; alvo entrega apenas `chall.exe`/`gecko2026.exe`, a DLL do processor roda só no servidor)*
+- **Flag format:** `HIK_[text]_[md5]`
+- **Access:** `nc <IP> <PORT>` (raw TCP, Windows Server 2022 on AWS eu-central-1; periodic restart) / HTTP `<IP>:8080` serves only `gecko2026.exe`
+- **Prompt:** *(not transcribed in the session notes; the target delivers only `chall.exe`/`gecko2026.exe`, the processor DLL runs only on the server)*
 
 ---
 
 ## 0. TL;DR
 
-1. O desafio entrega só um `chall.exe` (= `gecko2026.exe`, servido no HTTP `:8080`). Em runtime ele carrega `gecko2026-module.dll` (função `processor`) que **não é distribuída** e roda só no servidor.
-2. **Não precisa da DLL de disco.** O `processor` é um **dispatcher de 3 opcodes de R/W da memória do próprio processo**. O opcode de **leitura** (`flag=1`) é um `ReadProcessMemory(self, base+counter, …)` — um **leak de memória arbitrária** (janela de ~4 GB a partir da base da DLL).
-3. Com esse leak vazamos a DLL inteira da memória → `module_dump.bin`. Dentro dela, logo após a string `FLAG: `, há um **blob cifrado de 60 bytes** = a flag.
-4. A DLL **nunca decifra esse blob** no fluxo do serviço, mas a rotina de decrypt (XOR por palavra com chave embutida de 4 bytes) está na própria DLL → **decifra-se offline**.
+1. The challenge delivers only a `chall.exe` (= `gecko2026.exe`, served over HTTP `:8080`). At runtime it loads `gecko2026-module.dll` (function `processor`) which is **not distributed** and runs only on the server.
+2. **You don't need the DLL from disk.** The `processor` is a **dispatcher of 3 opcodes for R/W of the process's own memory**. The **read** opcode (`flag=1`) is a `ReadProcessMemory(self, base+counter, …)` — an **arbitrary memory leak** (~4 GB window from the DLL base).
+3. With that leak we dump the entire DLL from memory → `module_dump.bin`. Inside it, right after the string `FLAG: `, there is a **60-byte encrypted blob** = the flag.
+4. The DLL **never decrypts that blob** in the service flow, but the decrypt routine (per-word XOR with a built-in 4-byte key) is in the DLL itself → **decrypt it offline**.
 
-### Cadeia que fechou
-1. `cookie "Ekoparty 2026 - Binary Gecko CTF challenge"` -> banner saudável `"Welcome to this CTF\0"` (20B)
-2. `<IBII>(N=0xd, flag=1, counter=0x0, len=0x1000)` -> leak de 4KB a partir da base da DLL; repetir com `counter += 0x1000` até `0x12000` (próxima página não-mapeada fecha a conexão)
-3. Montar `module_dump.bin` (76 KB) a partir dos leaks encadeados
-4. Localizar `"FLAG: "` em file-off `0xd020`; blob cifrado de 60 bytes em `0xd026`
-5. Known-plaintext `ct[:4] ^ b"HIK_"` -> chave XOR de 4 bytes `e1 3b ee 03`; decifrar os 60 bytes -> flag
+### Chain that closed it
+1. `cookie "Ekoparty 2026 - Binary Gecko CTF challenge"` -> healthy banner `"Welcome to this CTF\0"` (20B)
+2. `<IBII>(N=0xd, flag=1, counter=0x0, len=0x1000)` -> leak of 4KB from the DLL base; repeat with `counter += 0x1000` until `0x12000` (the next unmapped page closes the connection)
+3. Assemble `module_dump.bin` (76 KB) from the chained leaks
+4. Locate `"FLAG: "` at file-off `0xd020`; 60-byte encrypted blob at `0xd026`
+5. Known-plaintext `ct[:4] ^ b"HIK_"` -> 4-byte XOR key `e1 3b ee 03`; decrypt the 60 bytes -> flag
 
 ---
 
-## 1. Artefatos
+## 1. Artifacts
 
-- `chall.exe` / `gecko2026.exe` — host entregue (idênticos), serviço Winsock que carrega `gecko2026-module.dll` em runtime.
-- `module_dump.bin` (76 KB) — a `gecko2026-module.dll` reconstruída a partir da memória via leak (raw image, base `0x7ffae5040000`).
-- `exploit_leak.py` — primitivo de leak (`flag=1`), com guard de banner saudável.
-- `exploit_initrun.py`, `exploit_vm.py`, `exploit_flagsweep.py` — tentativas de hipóteses antigas (protocolo útil de referência; premissas refutadas, ver §4).
-- `decrypt_flag.py` — decrypt offline do blob da flag.
-- `NOTES.md` — disassembly e cronologia completos da sessão.
+- `chall.exe` / `gecko2026.exe` — delivered host (identical), a Winsock service that loads `gecko2026-module.dll` at runtime.
+- `module_dump.bin` (76 KB) — the `gecko2026-module.dll` reconstructed from memory via leak (raw image, base `0x7ffae5040000`).
+- `exploit_leak.py` — leak primitive (`flag=1`), with a healthy-banner guard.
+- `exploit_initrun.py`, `exploit_vm.py`, `exploit_flagsweep.py` — attempts at old hypotheses (useful protocol reference; premises refuted, see §4).
+- `decrypt_flag.py` — offline decrypt of the flag blob.
+- `NOTES.md` — full disassembly and session timeline.
 
-## 2. Entrega / validação
+## 2. Delivery / validation
 
-Não há oráculo externo: a flag é obtida inteiramente offline, via leak de memória + decrypt local. Formato da flag: `HIK_GECKO2026_CHALLENGE1_<md5 32 hex>`.
+There is no external oracle: the flag is obtained entirely offline, via memory leak + local decrypt. Flag format: `HIK_GECKO2026_CHALLENGE1_<md5 32 hex>`.
 
-## 3. Análise
+## 3. Analysis
 
-### 3.1 Recon da superfície
-- `:<PORT>` — serviço Winsock cru, 1 thread por conexão, **rate-limiter por IP ~60s acumulativo** (cada toque re-arma +60s; usar ≥70s entre conexões, não martelar).
-- `:8080` — `SimpleHTTP` Python com directory listing, serve **só** `gecko2026.exe`. Testado: `gecko2026-module.dll`, `flag`, `.git` etc → 404. A DLL **não** está exposta.
-- `:3389` — RDP (NLA/CredSSP), host `EC2AMAZ-IMAJVSF`, Windows Server 2022 standalone. Sem credencial fundamentada → descartado como vetor.
-- OSINT: `github.com/Binary-Gecko` tem os desafios 2024/2025 deles (só entregam o EXE, sem fonte). O de 2025 é "Escape from the virtual Intel x64 CPU" — **pista falsa** para o 2026 (ver §4).
+### 3.1 Surface recon
+- `:<PORT>` — raw Winsock service, 1 thread per connection, **per-IP rate-limiter ~60s cumulative** (each touch re-arms +60s; use ≥70s between connections, don't hammer).
+- `:8080` — Python `SimpleHTTP` with directory listing, serves **only** `gecko2026.exe`. Tested: `gecko2026-module.dll`, `flag`, `.git` etc → 404. The DLL is **not** exposed.
+- `:3389` — RDP (NLA/CredSSP), host `EC2AMAZ-IMAJVSF`, standalone Windows Server 2022. No founded credential → discarded as a vector.
+- OSINT: `github.com/Binary-Gecko` has their 2024/2025 challenges (they only deliver the EXE, no source). The 2025 one is "Escape from the virtual Intel x64 CPU" — a **false lead** for 2026 (see §4).
 
-### 3.2 Protocolo (do disassembly do `chall.exe`)
-Por conexão, 2 estágios. Struct passado ao `processor` em `rsp+0x30`, packed `<IBII>` + corpo:
+### 3.2 Protocol (from the disassembly of `chall.exe`)
+Per connection, 2 stages. Struct passed to the `processor` at `rsp+0x30`, packed `<IBII>` + body:
 
-| offset | campo | tipo | significado (confirmado) |
+| offset | field | type | meaning (confirmed) |
 |--------|-------|------|--------------------------|
-| +0  | `field0` (N) | u32 | tamanho total; `0xd ≤ N ≤ 0x100d`; corpo = `N-13` bytes |
-| +4  | `flag`       | u8  | opcode do processor (0/1/2) |
-| +5  | `counter`    | u32 | offset de memória a partir da base da DLL (zero-extended) |
-| +9  | `len`        | u32 | nº de bytes devolvidos pelo `send` (`len ≤ 0x1000`) |
-| +13 | `data[]`     | u8[]| corpo de `N-13` bytes (dados pro Write; ignorado no Read) |
+| +0  | `field0` (N) | u32 | total size; `0xd ≤ N ≤ 0x100d`; body = `N-13` bytes |
+| +4  | `flag`       | u8  | processor opcode (0/1/2) |
+| +5  | `counter`    | u32 | memory offset from the DLL base (zero-extended) |
+| +9  | `len`        | u32 | number of bytes returned by `send` (`len ≤ 0x1000`) |
+| +13 | `data[]`     | u8[]| body of `N-13` bytes (data for Write; ignored on Read) |
 
-- **Stage 1 (cookie):** `recv(256)` → `strcmp` com `Ekoparty 2026 - Binary Gecko CTF challenge` (42 bytes, sem NUL). Se bate, devolve um banner de 20 bytes (`Welcome to this CTF\0` quando o servidor está saudável). O banner oscila: às vezes volta 20 bytes zerados (servidor instável) — resultado de stage2 nessas janelas é lixo. Sempre exigir o banner saudável antes de agir.
-- **Stage 2 (loop):** manda header de 13 bytes `<IBII>(N, flag, counter, len)` + corpo no mesmo `sendall` (se `N>0xd`, o exe faz UM `recv(N-13)` e exige tudo num recv só, senão fecha). O `processor` roda; se retorna 1 → `send(data, len)` e volta pro loop (dá pra encadear vários); se retorna 0 → a conexão morre.
+- **Stage 1 (cookie):** `recv(256)` → `strcmp` against `Ekoparty 2026 - Binary Gecko CTF challenge` (42 bytes, no NUL). If it matches, it returns a 20-byte banner (`Welcome to this CTF\0` when the server is healthy). The banner fluctuates: sometimes 20 zeroed bytes come back (unstable server) — a stage2 result in those windows is garbage. Always require the healthy banner before acting.
+- **Stage 2 (loop):** send a 13-byte header `<IBII>(N, flag, counter, len)` + body in the same `sendall` (if `N>0xd`, the exe does ONE `recv(N-13)` and requires everything in a single recv, otherwise it closes). The `processor` runs; if it returns 1 → `send(data, len)` and back to the loop (you can chain several); if it returns 0 → the connection dies.
 
-### 3.3 O que o `processor` realmente faz (da DLL reconstruída)
-Base real da imagem da DLL: `0x7ffae5040000`. Dispatcher em file-off `0x1800`. Lê `flag`; se `≥3` retorna 0 (fecha). Senão chama `handler_table[flag]`:
+### 3.3 What the `processor` actually does (from the reconstructed DLL)
+Real DLL image base: `0x7ffae5040000`. Dispatcher at file-off `0x1800`. Reads `flag`; if `≥3` returns 0 (closes). Otherwise it calls `handler_table[flag]`:
 
-| flag | handler (file-off) | ação |
+| flag | handler (file-off) | action |
 |------|--------------------|------|
-| 0 | 0x1620 | one-shot guard (`[0xd064]==1`); escreve uma constante em `data[0..3]`. Guard=0 → no-op. |
+| 0 | 0x1620 | one-shot guard (`[0xd064]==1`); writes a constant into `data[0..3]`. Guard=0 → no-op. |
 | **1** | 0x1690 | `ReadProcessMemory(GetCurrentProcess(), base+counter, data[], len)` → **LEAK** |
-| **2** | 0x1730 | `WriteProcessMemory(GetCurrentProcess(), base+counter, data[], len)` → **WRITE arbitrário** |
-| ≥3 | — | retorna 0 (fecha) |
+| **2** | 0x1730 | `WriteProcessMemory(GetCurrentProcess(), base+counter, data[], len)` → **arbitrary WRITE** |
+| ≥3 | — | returns 0 (closes) |
 
-Endereço efetivo = `base + counter` (counter u32 → alcance ~4 GB acima da base); `len ≤ 0x1000`. **Sem** `CreateProcess`/`WaitForDebugEvent`/`SetThreadContext` em lugar nenhum — não há VM nem single-step. É puro R/W do espaço do próprio processo.
+Effective address = `base + counter` (counter u32 → ~4 GB reach above the base); `len ≤ 0x1000`. **No** `CreateProcess`/`WaitForDebugEvent`/`SetThreadContext` anywhere — there is no VM or single-step. It is pure R/W of the process's own address space.
 
-### 3.4 Exploit — vazando a DLL
-`flag=1` + `counter`=offset + `len`=0x1000 lê 4 KB de `base+counter`. `counter=0` devolve o header `MZ` da própria DLL. Varrendo `counter = 0, 0x1000, 0x2000, …` (o gate fica aberto, encadeia dezenas de leaks numa conexão) dumpamos a imagem inteira: RVA `0..0x12000` mapeado, `0x13000` já é página não-mapeada (`ReadProcessMemory` falha → retorna 0 → conexão fecha). Resultado: `module_dump.bin` (76 KB), confirmado PE32+ DLL que exporta `processor`, nome `gecko2026-module.dll`.
+### 3.4 Exploit — leaking the DLL
+`flag=1` + `counter`=offset + `len`=0x1000 reads 4 KB from `base+counter`. `counter=0` returns the DLL's own `MZ` header. Sweeping `counter = 0, 0x1000, 0x2000, …` (the gate stays open, chaining dozens of leaks in one connection) we dump the whole image: RVA `0..0x12000` mapped, `0x13000` is already an unmapped page (`ReadProcessMemory` fails → returns 0 → connection closes). Result: `module_dump.bin` (76 KB), confirmed PE32+ DLL exporting `processor`, name `gecko2026-module.dll`.
 
-Como analisar `module_dump.bin`: é um dump da imagem virtual, não o PE de disco. Carregar como raw/flat na base `0x7ffae5040000` (`objdump -D -b binary -mi386:x86-64 --adjust-vma=0x7ffae5040000`, ou Ghidra importando como raw x86-64 nessa base). Se deixar a ferramenta parsear os section headers, ela mapeia os VAs errado.
+How to analyze `module_dump.bin`: it is a dump of the virtual image, not the on-disk PE. Load it as raw/flat at base `0x7ffae5040000` (`objdump -D -b binary -mi386:x86-64 --adjust-vma=0x7ffae5040000`, or Ghidra importing as raw x86-64 at that base). If you let the tool parse the section headers, it maps the VAs wrong.
 
-### 3.5 Onde está a flag
-Na `.data` da DLL, file-off `0xd020`: a string ASCII `FLAG: ` seguida de 60 bytes cifrados (file-off `0xd026`):
+### 3.5 Where the flag is
+In the DLL's `.data`, file-off `0xd020`: the ASCII string `FLAG: ` followed by 60 encrypted bytes (file-off `0xd026`):
 
 ```
 a972a55ca67ead48ae09de31d764ad4ba077a246af7cab32be02d866855fdc65
 d30bdc30d05eda66d70fd660835f8a67d45ddc3a840e8a3bd9c411fc
 ```
 
-Padrão: bytes de índice par altos (`0x83–0xde`, cara de keystream), ímpares majoritariamente ASCII.
+Pattern: even-index bytes high (`0x83–0xde`, looks like keystream), odd ones mostly ASCII.
 
-### 3.6 Solução — decrypt offline do blob
-A DLL **não** decifra o próprio blob, mas a rotina de decrypt está lá (chave embutida) — então dá pra reproduzir offline, sem nenhuma conexão a mais:
+### 3.6 Solution — offline decrypt of the blob
+The DLL does **not** decrypt its own blob, but the decrypt routine is there (embedded key) — so you can reproduce it offline, without any additional connection:
 
-- **Decryptor** = `fcn@0x1160` (VA `0x7ffae5041160`): XOR de palavras de 32 bits do blob (`"FLAG: "+6` = file-off `0xd026`, 60 bytes) contra uma chave de 4 bytes em `[0xe368]` (preenchida por `fcn@0x1050`). O caller `fcn@0x1240` faz `add rax,6` pra pular `"FLAG: "` antes do XOR.
-- **Chave = `e1 3b ee 03`** (word LE `0x03ee3be1`). Recuperável por known-plaintext: `ct[:4] ^ "HIK_"` (`a9 72 a5 5c ^ 48 49 4b 5f = e1 3b ee 03`). XOR é involutivo → a mesma chave decifra os 60 bytes.
-- Decifrado: `HIK_GECKO2026_CHALLENGE1_` + 32 hex de MD5; os 3 bytes finais `0xff` são padding.
+- **Decryptor** = `fcn@0x1160` (VA `0x7ffae5041160`): XOR of 32-bit words of the blob (`"FLAG: "+6` = file-off `0xd026`, 60 bytes) against a 4-byte key at `[0xe368]` (filled by `fcn@0x1050`). The caller `fcn@0x1240` does `add rax,6` to skip `"FLAG: "` before the XOR.
+- **Key = `e1 3b ee 03`** (LE word `0x03ee3be1`). Recoverable by known-plaintext: `ct[:4] ^ "HIK_"` (`a9 72 a5 5c ^ 48 49 4b 5f = e1 3b ee 03`). XOR is involutive → the same key decrypts the 60 bytes.
+- Decrypted: `HIK_GECKO2026_CHALLENGE1_` + 32 hex of MD5; the final 3 `0xff` bytes are padding.
 
 ```python
 ct  = open("module_dump.bin","rb").read()[0xd026:0xd026+60]
@@ -108,38 +110,38 @@ flag = bytes(ct[i]^key[i%4] for i in range(60)).rstrip(b"\xff").decode()
 # -> HIK_GECKO2026_CHALLENGE1_96edd2f20231e4e648cbddd5f29e5d88
 ```
 
-> Vias alternativas que também fechariam (não precisaram): ler a flag em claro noutra região via o leak (`ReadProcessMemory`, base+counter ~4 GB), ou usar a escrita arbitrária (`flag=2`) pra code-exec.
+> Alternative paths that would also close it (not needed): read the plaintext flag in another region via the leak (`ReadProcessMemory`, base+counter ~4 GB), or use the arbitrary write (`flag=2`) for code-exec.
 
-### 3.7 Receita rápida
+### 3.7 Quick recipe
 
 ```
-cookie  = b"Ekoparty 2026 - Binary Gecko CTF challenge"   # 42B, sem NUL
-# stage1: sendall(cookie); recv 20B; EXIGIR == b"Welcome to this CTF\0" (senão servidor instável, retry)
-# stage2 READ: sendall(struct.pack("<IBII", 0xd, 1, counter, 0x1000))   # flag=1, N=0xd (sem corpo)
-#   -> recebe 0x1000 bytes de (base+counter). encadeia counter=0,0x1000,... pra varrer memória.
+cookie  = b"Ekoparty 2026 - Binary Gecko CTF challenge"   # 42B, no NUL
+# stage1: sendall(cookie); recv 20B; REQUIRE == b"Welcome to this CTF\0" (otherwise unstable server, retry)
+# stage2 READ: sendall(struct.pack("<IBII", 0xd, 1, counter, 0x1000))   # flag=1, N=0xd (no body)
+#   -> receives 0x1000 bytes from (base+counter). chain counter=0,0x1000,... to sweep memory.
 # stage2 WRITE: sendall(struct.pack("<IBII", 0xd+len(data), 2, counter, len(data)) + data)  # flag=2
-# base da DLL = 0x7ffae5040000 ; o blob da flag está em counter=0xd026 (60 bytes).
+# DLL base = 0x7ffae5040000 ; the flag blob is at counter=0xd026 (60 bytes).
 ```
 
-Rate-limiter ~60s/IP acumulativo → 1 conexão por tentativa, ≥70s de intervalo, não martelar. Trocar de IP zera a penalidade.
+Rate-limiter ~60s/IP cumulative → 1 connection per attempt, ≥70s interval, don't hammer. Switching IP resets the penalty.
 
-## 4. O que não funcionou
+## 4. What didn't work
 
-| Hipótese | Resultado | Por quê |
+| Hypothesis | Result | Why |
 |---|---|---|
-| Leftover de pilha / gate `counter==T` | ✗ | Não existe gate de token. `counter` é só offset de memória. O "banner zerado" que parecia bloquear era só o servidor oscilando. |
-| VM single-step estilo desafio 2025 → escape → FLAG | ✗ | O `processor` 2026 não tem debuggee nem single-step, e nenhum código referencia `FLAG: `/o blob — não há condição de vitória a disparar. |
-| RDP / baixar a DLL do `:8080` | ✗ | Sem credencial fundamentada / DLL não exposta via HTTP. |
-| XOR trivial no blob (single-byte, add/sub, XOR-counter, CBC-rolling, split par/ímpar, XOR contra strings do binário) | ✗ | Nada dá `HIK_`; a chave real só sai por known-plaintext contra o decryptor real da DLL. |
+| Stack leftover / gate `counter==T` | ✗ | There is no token gate. `counter` is just a memory offset. The "zeroed banner" that looked like a block was just the server fluctuating. |
+| Single-step VM in the style of the 2025 challenge → escape → FLAG | ✗ | The 2026 `processor` has no debuggee or single-step, and no code references `FLAG: `/the blob — there is no win condition to trigger. |
+| RDP / downloading the DLL from `:8080` | ✗ | No founded credential / DLL not exposed over HTTP. |
+| Trivial XOR on the blob (single-byte, add/sub, XOR-counter, CBC-rolling, even/odd split, XOR against binary strings) | ✗ | Nothing yields `HIK_`; the real key only comes out via known-plaintext against the DLL's actual decryptor. |
 
-## 5. Conclusão / próximos passos
+## 5. Conclusion / next steps
 
-Fechou porque o primitivo de leitura arbitrária (`flag=1`) permite reconstruir a DLL inteira sem nunca precisar dela em disco, e a rotina de decrypt embutida (mesmo nunca chamada pelo serviço) é suficiente para reproduzir offline o algoritmo e recuperar a chave por known-plaintext (`HIK_` fixo no início da flag).
+It closed because the arbitrary-read primitive (`flag=1`) lets you reconstruct the entire DLL without ever needing it on disk, and the embedded decrypt routine (even though never called by the service) is enough to reproduce the algorithm offline and recover the key via known-plaintext (fixed `HIK_` at the start of the flag).
 
 ---
 
-## Apêndice — ferramentas
+## Appendix — tools
 
-- `exploit_leak.py` — `python3 exploit_leak.py`: leak parametrizável (`flag=1`, counter/len) com guard de banner saudável; usado para varrer a imagem da DLL inteira.
-- `decrypt_flag.py` — `python3 decrypt_flag.py`: decrypt offline do blob da flag em `module_dump.bin` (known-plaintext XOR de 4 bytes).
-- `exploit_initrun.py`, `exploit_vm.py`, `exploit_flagsweep.py` — tentativas de hipóteses descartadas (gate de token / VM single-step); mantidos como referência de protocolo.
+- `exploit_leak.py` — `python3 exploit_leak.py`: parametrizable leak (`flag=1`, counter/len) with a healthy-banner guard; used to sweep the entire DLL image.
+- `decrypt_flag.py` — `python3 decrypt_flag.py`: offline decrypt of the flag blob in `module_dump.bin` (known-plaintext 4-byte XOR).
+- `exploit_initrun.py`, `exploit_vm.py`, `exploit_flagsweep.py` — attempts at discarded hypotheses (token gate / single-step VM); kept as a protocol reference.

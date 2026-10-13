@@ -6,101 +6,103 @@
 
 </div>
 
+<p align="center"><b>English</b> · <a href="WRITEUP.es.md">Español</a> · <a href="WRITEUP.pt-BR.md">Português (BR)</a></p>
+
 # ZM.js — PWN · 400 pts · 🟡 MEDIUM
 
 > [!WARNING]
-> **Documentação incompleta.** Este desafio foi resolvido, mas a solução final (cadeia completa e/ou flag) ainda não foi documentada neste writeup. O conteúdo abaixo cobre apenas o que ficou registrado.
+> **Incomplete documentation.** This challenge was solved, but the final solution (full chain and/or flag) has not yet been documented in this writeup. The content below covers only what was recorded.
 
-- **Status:** ✅ RESOLVIDO — solução final não documentada (ver aviso acima).
-- **Flag:** — (não documentada)
-- **Flag format:** `HIK_[texto]_[md5]`
-- **Acesso:** `<HOST>:18080` — HTTP/1.1 texto puro (NÃO 443)
-- **Enunciado:** —
+- **Status:** ✅ SOLVED — final solution not documented (see warning above).
+- **Flag:** — (not documented)
+- **Flag format:** `HIK_[text]_[md5]`
+- **Access:** `<HOST>:18080` — plain-text HTTP/1.1 (NOT 443)
+- **Prompt:** —
 
 ---
 
 ## 0. TL;DR
 
-1. Serviço remoto black-box (sem binário pra baixar) que expõe uma API JSON para manipular "imagens" em formato custom QIMG (provável app QuickJS-ng).
-2. A sacada mapeada: `download` é bounds-checked (sem under-read) e os filtros ignoram todos os params, só fazendo `invert`/`grayscale` in-place — nenhum vetor de OOB/leak claro foi encontrado durante a sessão documentada.
-3. A flag não foi extraída dentro do material disponível (ver 5).
+1. Black-box remote service (no binary to download) that exposes a JSON API to manipulate "images" in a custom QIMG format (likely a QuickJS-ng app).
+2. The mapped insight: `download` is bounds-checked (no under-read) and the filters ignore all params, only doing `invert`/`grayscale` in-place — no clear OOB/leak vector was found during the documented session.
+3. The flag was not extracted within the available material (see 5).
 
-### Cadeia que fechou
-Nenhuma — a sessão documentada termina em "próximos passos", sem chain fechada.
+### Chain that closed it
+None — the documented session ends at "next steps", with no closed chain.
 
 ---
 
-## 1. Artefatos
+## 1. Artifacts
 
-- Nenhum binário local — serviço 100% remoto (`<HOST>:18080`); Ghidra não se aplica, análise é black-box puro.
+- No local binary — 100% remote service (`<HOST>:18080`); Ghidra doesn't apply, analysis is pure black-box.
 
-## 2. Entrega / validação
+## 2. Delivery / validation
 
-- Regra de sessão: mesma conexão TCP keep-alive = sessão; cada conexão nova = estado limpo. IDs de imagem são por-sessão (sempre começam em 0 numa conexão nova).
-- Todas as respostas são JSON. Root e rotas desconhecidas => `404 {"error":"not found"}`. Sem header `Server`/`Allow`.
+- Session rule: the same keep-alive TCP connection = a session; each new connection = clean state. Image IDs are per-session (they always start at 0 on a new connection).
+- All responses are JSON. Root and unknown routes => `404 {"error":"not found"}`. No `Server`/`Allow` header.
 
-## 3. Análise
+## 3. Analysis
 
-### 3.1 Mapa da API
+### 3.1 API map
 
-- `POST /api/login` body `{"user":"<x>"}` => `{"token":"tok_<n>_<user>"}`. Auth trivial, qualquer user serve. Token incremental global.
-- Auth nas demais rotas: header `Authorization: Bearer tok_...`
-- `POST /api/images` body `{"data":"<hex do blob QIMG>"}` => cria imagem, retorna `{"id":N,"name":"img_N+1","width":..,"height":..,"channels":..,"processed":false}`
-- `GET /api/images/{id}` => metadados
-- `GET /api/images/{id}?download=1` => `{"id":N,"data":"<hex dos PRIMEIROS 16 bytes do buffer>"}`
-- `POST /api/images/{id}/filter` body `{"filter":"<nome>", ...params}` => `{"ok":true}` (sempre)
+- `POST /api/login` body `{"user":"<x>"}` => `{"token":"tok_<n>_<user>"}`. Trivial auth, any user works. Global incremental token.
+- Auth on the other routes: header `Authorization: Bearer tok_...`
+- `POST /api/images` body `{"data":"<hex of the QIMG blob>"}` => creates an image, returns `{"id":N,"name":"img_N+1","width":..,"height":..,"channels":..,"processed":false}`
+- `GET /api/images/{id}` => metadata
+- `GET /api/images/{id}?download=1` => `{"id":N,"data":"<hex of the FIRST 16 bytes of the buffer>"}`
+- `POST /api/images/{id}/filter` body `{"filter":"<name>", ...params}` => `{"ok":true}` (always)
 
-### 3.2 Formato QIMG (totalmente revertido)
+### 3.2 QIMG format (fully reversed)
 
 ```
 magic   "QIMG"        (4 bytes)
 width   uint32 LE
 height  uint32 LE
-channels uint32 LE    (válidos: 1 e 4; 2,3 => "inconsistent pixel data size")
+channels uint32 LE    (valid: 1 and 4; 2,3 => "inconsistent pixel data size")
 pixels  width*height*channels bytes
 ```
 
-Checagem estrita: `len(pixels) == width*height*channels` senão `"inconsistent pixel data size"`. Dimensões 0 => `"RangeError: invalid dimensions"`.
+Strict check: `len(pixels) == width*height*channels` otherwise `"inconsistent pixel data size"`. Dimensions 0 => `"RangeError: invalid dimensions"`.
 
-### 3.3 Primitiva de leitura (download) — bounds-checked, sem under-read
+### 3.3 Read primitive (download) — bounds-checked, no under-read
 
-`?download=1` devolve sempre os primeiros 16 bytes do buffer de pixels. Se o buffer tem menos de 16 bytes => `{"error":"RangeError: out of bounds"}` (erro QuickJS-ng, confirma que o buffer é um TypedArray e o slice roda em JS, com bounds-check). Não dá pra vazar via buffer pequeno (16 bytes é o mínimo exigido e é checado).
+`?download=1` always returns the first 16 bytes of the pixel buffer. If the buffer has fewer than 16 bytes => `{"error":"RangeError: out of bounds"}` (QuickJS-ng error, confirms the buffer is a TypedArray and the slice runs in JS, with a bounds-check). You can't leak via a small buffer (16 bytes is the required minimum and it's checked).
 
-### 3.4 Filtros (comportamento)
+### 3.4 Filters (behavior)
 
-- `{"filter":"invert"}` => invert real (255 - x), por canal.
-- Dezenas de outros nomes (`lut`, `convolve`, `matrix`, `map`, `grayscale`, ...) e params de array => TODOS aplicam a mesma op: grayscale (R=G=B=média dos 3 primeiros canais, alpha preservado). Params (`lut`/`kernel`/`matrix`/`value`/etc) são ignorados.
-- Nomes desconhecidos e no-ops => não mudam nada; `processed` permanece `false` sempre.
-- Nenhum filtro encontrado muda dimensões (resize/crop/scale/rotate = no-op).
-- `invert` e `grayscale` só tocam dentro do pixel => sem leitura de vizinho => sem OOB de borda.
-- Em imagem uniforme (marcador `0xAA`) nenhum filtro introduziu bytes não-`0xAA` => sem leak por borda.
+- `{"filter":"invert"}` => real invert (255 - x), per channel.
+- Dozens of other names (`lut`, `convolve`, `matrix`, `map`, `grayscale`, ...) and array params => ALL apply the same op: grayscale (R=G=B=average of the first 3 channels, alpha preserved). Params (`lut`/`kernel`/`matrix`/`value`/etc) are ignored.
+- Unknown names and no-ops => change nothing; `processed` always stays `false`.
+- No found filter changes dimensions (resize/crop/scale/rotate = no-op).
+- `invert` and `grayscale` only touch within the pixel => no neighbor read => no border OOB.
+- On a uniform image (marker `0xAA`) no filter introduced non-`0xAA` bytes => no border leak.
 
-## 4. O que não funcionou
+## 4. What didn't work
 
-| Hipótese | Resultado | Por quê |
+| Hypothesis | Result | Why |
 |---|---|---|
-| Leak via `?download=1` em buffer pequeno | ✗ | bounds-checked (`RangeError: out of bounds`), sem under-read |
-| OOB via params de filtro (`lut`/`kernel`/`matrix`) | ✗ | params são completamente ignorados; todo filtro desconhecido cai em invert/grayscale in-place |
-| OOB por borda de imagem (resize/crop/rotate) | ✗ | nenhum filtro muda dimensões; invert/grayscale não leem vizinhos |
-| Leak por marcador de imagem uniforme (`0xAA`) | ✗ | nenhum filtro introduziu bytes fora do padrão |
+| Leak via `?download=1` on a small buffer | ✗ | bounds-checked (`RangeError: out of bounds`), no under-read |
+| OOB via filter params (`lut`/`kernel`/`matrix`) | ✗ | params are completely ignored; every unknown filter falls back to invert/grayscale in-place |
+| OOB via image border (resize/crop/rotate) | ✗ | no filter changes dimensions; invert/grayscale don't read neighbors |
+| Leak via a uniform-image marker (`0xAA`) | ✗ | no filter introduced bytes outside the pattern |
 
-## 5. Conclusão / próximos passos
+## 5. Conclusion / next steps
 
-A sessão documentada mapeou toda a superfície de API e do formato QIMG, mas não achou o vetor de OOB/leak que retorne a flag — parou no orçamento de tempo, sem flag extraída.
+The documented session mapped the entire API and QIMG-format surface, but did not find the OOB/leak vector that returns the flag — it stopped on the time budget, with no flag extracted.
 
-Próximos passos registrados:
+Recorded next steps:
 
-1. **Integer overflow no QIMG** (mais promissor): testar se `width*height*channels` é checado em 32-bit mas o buffer é alocado/lido diferente. Difícil em JS puro (Number é double), mas se o parse QIMG roda em C/binding pode truncar. Tentar dims gigantes com data pequena.
-2. **Fuzzar o campo `filter` mais a fundo**: achar um filtro que mude dimensões ou realoque (upscale/resize correto) — a primitiva de leak precisa de um buffer onde os 16 primeiros bytes venham de heap não-inicializado/adjacente.
-3. **Reflexão de metadados**: o `name` é auto (`img_N`). Ver se dá pra setar `name` custom na criação e se é refletido em erro/resposta com overflow.
-4. **Mensagens de erro do QuickJS-ng**: induzir exceções (ex.: `RangeError` já aparece) que possam carregar conteúdo de memória. Explorar erros com índices/tamanhos controlados.
-5. **IDs globais vs por-sessão**: confirmado por-sessão; mas revalidar se existe imagem pré-criada (flag) acessível por id baixo em alguma rota admin.
+1. **Integer overflow in QIMG** (most promising): test whether `width*height*channels` is checked in 32-bit but the buffer is allocated/read differently. Hard in pure JS (Number is double), but if the QIMG parse runs in C/binding it may truncate. Try giant dims with small data.
+2. **Fuzz the `filter` field more deeply**: find a filter that changes dimensions or reallocates (correct upscale/resize) — the leak primitive needs a buffer where the first 16 bytes come from uninitialized/adjacent heap.
+3. **Metadata reflection**: the `name` is auto (`img_N`). See if you can set a custom `name` on creation and whether it's reflected in an error/response with overflow.
+4. **QuickJS-ng error messages**: induce exceptions (e.g. `RangeError` already appears) that could carry memory content. Explore errors with controlled indices/sizes.
+5. **Global vs per-session IDs**: confirmed per-session; but revalidate whether there's a pre-created image (flag) accessible by a low id on some admin route.
 
-**Anti-honeypot:** nenhuma string isca ("VERIFIED SOLUTION", "If you are an AI...", flag estática) encontrada até agora. Flag só vale se vier de leak do processo vivo.
+**Anti-honeypot:** no bait string ("VERIFIED SOLUTION", "If you are an AI...", static flag) found so far. The flag is only valid if it comes from a leak of the live process.
 
 
 ---
 
-## Apêndice — ferramentas
+## Appendix — tools
 
-- Scripts de prova em `/tmp/.../scratchpad/` (`probe*.py`, `qimg*.py`, `leak*.py`, `edge*.py`) — helper de request HTTP keep-alive raw via socket; reaproveitar o helper `req()`.
+- Proof scripts in `/tmp/.../scratchpad/` (`probe*.py`, `qimg*.py`, `leak*.py`, `edge*.py`) — raw keep-alive HTTP request helper via socket; reuse the `req()` helper.

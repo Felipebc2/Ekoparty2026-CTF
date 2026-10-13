@@ -6,109 +6,111 @@
 
 </div>
 
+<p align="center"><b>English</b> · <a href="WRITEUP.es.md">Español</a> · <a href="WRITEUP.pt-BR.md">Português (BR)</a></p>
+
 # Background Noise — NET (Packet) · 700 pts · 🔴 HARD
 
-- **Status:** 🟡 EM ABERTO — budget estourado no dia 2 (2026-10-09); protocolo e pcap 100% mapeados, mas a `answer` do oráculo não foi determinada.
+- **Status:** 🟡 OPEN — budget blown on day 2 (2026-10-09); protocol and pcap 100% mapped, but the oracle's `answer` was not determined.
 - **Flag:** —
-- **Flag format:** `HIK_[texto]_[md5]`
-- **Acesso:** `nc <IP> <PORT>` (porta `16009` nas notas da sessão)
-- **Enunciado:** *"The message is not where a normal protocol would put it. Recover what left."*
+- **Flag format:** `HIK_[text]_[md5]`
+- **Access:** `nc <IP> <PORT>` (port `16009` in the session notes)
+- **Prompt:** *"The message is not where a normal protocol would put it. Recover what left."*
 
 ---
 
 ## 0. TL;DR
 
-1. Harness da família PACKET: banner `Background Noise - 700 pts / session 120s / sid <32hex>`; comandos `help | capture [sec] | getpcap | tcpdump <args> | submit <proof> | quit`.
-2. `getpcap` devolve um pcap sintético (MACs zeradas, linktype Ethernet) só com tráfego ICMP echo request/reply entre dois IPs fixos, organizado em "rounds" de sweep.
-3. Cada campo do pacote cai em um de três baldes — constante, contador limpo, ou ruído uniforme que muda por round — e nenhum carrega mensagem estável. Confirmado por diff cross-sessão: nenhum campo variável bate entre duas sessões distintas.
-4. `submit` dá feedback real (`incorrect.`), então o bloqueio não é técnica de decodificação — é não saber o **formato exato da `answer`** esperada pelo oráculo. ~190 submits acumulados ao longo da sessão, todos `incorrect.`.
-5. A pista central ("the message is not where a normal protocol would put it") é a própria armadilha: o payload — onde um protocolo normal poria dado — é ruído por design; a "mensagem" aparentemente não existe como payload decodificável, e a resposta esperada é provavelmente um identificador estrutural do tráfego (nos moldes de `Duty Roster`, que usa `who:where:port:interval`).
+1. PACKET family harness: banner `Background Noise - 700 pts / session 120s / sid <32hex>`; commands `help | capture [sec] | getpcap | tcpdump <args> | submit <proof> | quit`.
+2. `getpcap` returns a synthetic pcap (zeroed MACs, Ethernet linktype) with only ICMP echo request/reply traffic between two fixed IPs, organized into "rounds" of sweeps.
+3. Each packet field falls into one of three buckets — constant, clean counter, or uniform noise that changes per round — and none carries a stable message. Confirmed by cross-session diff: no variable field matches between two distinct sessions.
+4. `submit` gives real feedback (`incorrect.`), so the blocker is not a decoding technique — it is not knowing the **exact format of the `answer`** expected by the oracle. ~190 submits accumulated over the session, all `incorrect.`.
+5. The central hint ("the message is not where a normal protocol would put it") is the trap itself: the payload — where a normal protocol would put data — is noise by design; the "message" apparently does not exist as a decodable payload, and the expected answer is probably a structural identifier of the traffic (along the lines of `Duty Roster`, which uses `who:where:port:interval`).
 
-### Cadeia que NÃO fechou
-1. `capture [sec]` -> `getpcap` -> decodificar pcap (1602 pacotes ICMP, 2 IPs, ident 412 constante)
-2. Testar payload, `ip.id` (request e reply), `icmp.seq`, timing inter-pacote, ordem dos pacotes como portadores de mensagem -> todos refutados como ruído/decoy
-3. ~190 submits com `proof = sha256_hex(sid + ":" + answer + ":" + sha256_hex(pcap_b64_text))` variando `answer` e a forma do hash do pcap -> todos `incorrect.`
+### Chain that did NOT close
+1. `capture [sec]` -> `getpcap` -> decode pcap (1602 ICMP packets, 2 IPs, constant ident 412)
+2. Test payload, `ip.id` (request and reply), `icmp.seq`, inter-packet timing, packet order as message carriers -> all refuted as noise/decoy
+3. ~190 submits with `proof = sha256_hex(sid + ":" + answer + ":" + sha256_hex(pcap_b64_text))` varying `answer` and the form of the pcap hash -> all `incorrect.`
 
 ---
 
-## 1. Artefatos
+## 1. Artifacts
 
-- `bn.b64` — `getpcap` (texto base64, captura de 45s, sid `9a7cbcb41f68a5b919152b9bdd4c4a02`).
-- `bn.pcap` — pcap decodificado a partir de `bn.b64` (dado não confiável; abrir só com `-r`, nunca executar).
-- `bn_sess0.b64`, `bn_sess1.b64` — 2 capturas de 18s em sessões TCP distintas, usadas para diff cross-sessão.
+- `bn.b64` — `getpcap` (base64 text, 45s capture, sid `9a7cbcb41f68a5b919152b9bdd4c4a02`).
+- `bn.pcap` — pcap decoded from `bn.b64` (untrusted data; open only with `-r`, never execute).
+- `bn_sess0.b64`, `bn_sess1.b64` — 2 captures of 18s in distinct TCP sessions, used for the cross-session diff.
 
-## 2. Entrega / validação
+## 2. Delivery / validation
 
 - `getpcap` → `--- BEGIN PCAP --- <base64> --- END PCAP ---`.
-- `proof = sha256_hex(sid + ":" + answer + ":" + sha256_hex(pcap_b64_text))` — hash do texto base64 sem whitespace (confirmado pelo próprio `help`).
-- Tudo na mesma conexão TCP (reconectar zera `sid`+pcap).
-- `submit` dá feedback real: resposta `incorrect.` para proof errado (diferente do Helpdesk) — permite iterar/validar quando a `answer` certa for conhecida.
+- `proof = sha256_hex(sid + ":" + answer + ":" + sha256_hex(pcap_b64_text))` — hash of the base64 text without whitespace (confirmed by `help` itself).
+- Everything on the same TCP connection (reconnecting resets `sid`+pcap).
+- `submit` gives real feedback: `incorrect.` response for a wrong proof (unlike Helpdesk) — lets you iterate/validate once the right `answer` is known.
 
-## 3. Análise
+## 3. Analysis
 
-### 3.1 Estrutura do pcap (100% mapeada)
-`linktype=1` Ethernet, MACs `00:00:00:00:00:00` → pcap sintético. Só IPv4/ICMP. Tráfego = echo request/reply entre dois IPs fixos do laboratório (pinger ↔ server).
-- Em 45s: 1602 pacotes = 801 echo request (type 8) + 801 echo reply (type 0), pareados 1:1.
-- Organizado em "rounds" (~2s de gap entre eles). Cada round = sweep de ping fixo: grupo A `icmp.seq` 0..47 (48 pacotes), grupo B `icmp.seq` 1000..1095 (96 pacotes) — ranges idênticos em todo round, estrutura fixa, não carrega dado.
-- ICMP identifier = 412 (`0x019c`) constante em todos os 1602 pacotes.
-- Frame = 43 bytes (14 eth + 20 ip + 9 icmp = 8 hdr + 1 byte de data). TTL=64, TOS=0, code=0, DF set nos requests. Tudo constante.
+### 3.1 Pcap structure (100% mapped)
+`linktype=1` Ethernet, MACs `00:00:00:00:00:00` → synthetic pcap. IPv4/ICMP only. Traffic = echo request/reply between two fixed lab IPs (pinger ↔ server).
+- In 45s: 1602 packets = 801 echo request (type 8) + 801 echo reply (type 0), paired 1:1.
+- Organized into "rounds" (~2s gap between them). Each round = fixed ping sweep: group A `icmp.seq` 0..47 (48 packets), group B `icmp.seq` 1000..1095 (96 packets) — identical ranges in every round, fixed structure, carries no data.
+- ICMP identifier = 412 (`0x019c`) constant across all 1602 packets.
+- Frame = 43 bytes (14 eth + 20 ip + 9 icmp = 8 hdr + 1 byte of data). TTL=64, TOS=0, code=0, DF set on requests. All constant.
 
-### 3.2 O que foi descartado (confiável — scripts `bn_*.py`)
-Cada campo cai em 1 de 3 baldes: constante, contador +1 limpo (decoy), ou ruído uniforme que muda a cada round (decoy). Nenhum carrega mensagem estável.
-- **Payload (1 byte/pkt):** request==reply (echo RFC, 0 diferenças). Random. XOR com sid (hex/ascii), sha256(sid), md5(sid), single-byte 0..255, por grupo/round → sem `HIK`.
-- **req ip.id:** contador +1 global perfeito (10026,10027,…) atravessando rounds. Decoy "normal".
-- **reply ip.id ("background noise"):** contador monotônico com delta uniforme 1..41 (sem o reset de round). Deltas DIFEREM a cada round → ruído genuíno, não repetição de mensagem. Testado: delta&0xff, delta%95+32, bit-planes (LSB/parity/median-split, msb/lsb, 8 offsets), ip.id mod128, low byte, por grupo A/B → sem `HIK` nem ASCII.
-- **icmp.seq:** contador estruturado (0-47,1000-1095) idêntico por round.
-- **icmp.ident:** 412 constante. ttl/tos/code/verihl/flags/fragoff/totlen: constantes.
-- **Ethernet MAC:** 00..00. Checksums IP/ICMP: corretos/derivados (tshark: "Good").
-- **Timing:** inter-pacote ~40ms + jitter 200-600us unimodal = ruído; splits binários (>40.5ms,>41ms) não deram ASCII. Timestamps us do pcap (lo byte, %95+32, %128) → ruído.
-- `tshark -z expert`: nenhum malformed; só `eth:ethertype:ip:icmp:data`.
+### 3.2 What was discarded (reliable — scripts `bn_*.py`)
+Each field falls into 1 of 3 buckets: constant, clean +1 counter (decoy), or uniform noise that changes each round (decoy). None carries a stable message.
+- **Payload (1 byte/pkt):** request==reply (echo RFC, 0 differences). Random. XOR with sid (hex/ascii), sha256(sid), md5(sid), single-byte 0..255, per group/round → no `HIK`.
+- **req ip.id:** perfect global +1 counter (10026,10027,…) crossing rounds. "Normal" decoy.
+- **reply ip.id ("background noise"):** monotonic counter with uniform delta 1..41 (without the round reset). Deltas DIFFER each round → genuine noise, not a repeated message. Tested: delta&0xff, delta%95+32, bit-planes (LSB/parity/median-split, msb/lsb, 8 offsets), ip.id mod128, low byte, per group A/B → no `HIK` nor ASCII.
+- **icmp.seq:** structured counter (0-47,1000-1095) identical per round.
+- **icmp.ident:** 412 constant. ttl/tos/code/verihl/flags/fragoff/totlen: constant.
+- **Ethernet MAC:** 00..00. IP/ICMP checksums: correct/derived (tshark: "Good").
+- **Timing:** inter-packet ~40ms + jitter 200-600us unimodal = noise; binary splits (>40.5ms,>41ms) gave no ASCII. Pcap us timestamps (low byte, %95+32, %128) → noise.
+- `tshark -z expert`: no malformed; only `eth:ethertype:ip:icmp:data`.
 
-### 3.3 Diff cross-sessão (ANGLE 1) — conclusivo: não existe portador invariante
-2 sessões TCP distintas (sids `df9ce05a…`, `2523529709…`), captura 18s cada, alinhadas pacote-a-pacote:
-- `ttl`/`tos`/`icmp.ident`: 321/321 idênticos — mas são constantes genuínas (64/0/412), não carregam mensagem.
-- `payload(1B)`/`ip.id`/`icmp.seq`: 0–1/321 idênticos entre sessões → random por sessão. `seq` difere só por offset de fase. Round = seq 1000..1095 (96) + 0..47 (48) = 144 pkts (confirmado).
-- Conclusão: nenhum campo variável casa entre sessões → a hipótese "decodificar mensagem estável" está morta. Se há mensagem, é per-sessão e indistinguível de ruído.
+### 3.3 Cross-session diff (ANGLE 1) — conclusive: no invariant carrier exists
+2 distinct TCP sessions (sids `df9ce05a…`, `2523529709…`), 18s capture each, aligned packet-by-packet:
+- `ttl`/`tos`/`icmp.ident`: 321/321 identical — but these are genuine constants (64/0/412), carrying no message.
+- `payload(1B)`/`ip.id`/`icmp.seq`: 0–1/321 identical between sessions → random per session. `seq` differs only by a phase offset. Round = seq 1000..1095 (96) + 0..47 (48) = 144 pkts (confirmed).
+- Conclusion: no variable field matches between sessions → the "decode a stable message" hypothesis is dead. If there is a message, it is per-session and indistinguishable from noise.
 
-### 3.4 Canal de timing — testado a fundo e refutado
-Estrutura de timing: cada par = request → (gap minúsculo) reply → (gap ~40ms) próximo req. `req→reply` gap: mode ~20-30us, 82 valores únicos espalhados contínuos 15-200us+ (cauda até 4.8ms). Inter-par: ~40.5ms (mean 40531us, stdev 700us), 398 valores únicos de 800 = jitter contínuo, não quantização autorada. Median-threshold → bytes com 0.24 imprimível (ruído). Decodes raw/g-base/g//10/g%256/(g-base)+32 e threshold±offset em ambos sentidos → sem `HIK`, sem ASCII.
+### 3.4 Timing channel — tested thoroughly and refuted
+Timing structure: each pair = request → (tiny gap) reply → (gap ~40ms) next req. `req→reply` gap: mode ~20-30us, 82 unique values spread continuous 15-200us+ (tail up to 4.8ms). Inter-pair: ~40.5ms (mean 40531us, stdev 700us), 398 unique of 800 values = continuous jitter, not authored quantization. Median-threshold → bytes with 0.24 printable (noise). Decodes raw/g-base/g//10/g%256/(g-base)+32 and threshold±offset in both directions → no `HIK`, no ASCII.
 
-**Ordem dos pacotes:** seq estritamente sequencial dentro do round (0..47, depois 1000..1095) — sem permutação, sem dado. Contagem por round constante = 144 (48+96).
+**Packet order:** strictly sequential seq within the round (0..47, then 1000..1095) — no permutation, no data. Constant count per round = 144 (48+96).
 
-**Payload-por-seq:** payload não é constante por seq entre rounds (4-6 valores distintos por seq) → random por round, majority-vote dá bytes aleatórios. Não é mensagem de 144 bytes repetida. Confirma payload 100% ruído.
+**Payload-per-seq:** payload is not constant per seq across rounds (4-6 distinct values per seq) → random per round, majority-vote gives random bytes. It is not a repeated 144-byte message. Confirms payload 100% noise.
 
-### 3.5 `tcpdump` server-side e outros comandos
-Bare `tcpdump` → "ok" + "listening on eth0 … EN10MB" mas eth0 fica silenciosa (0 pkts em 25s). Flags extras (`-XX`/múltiplas) → "rejected" (allowlist, igual Front Desk). `info` → ".". Sem comando oculto de pista.
+### 3.5 Server-side `tcpdump` and other commands
+Bare `tcpdump` → "ok" + "listening on eth0 … EN10MB" but eth0 stays silent (0 pkts in 25s). Extra flags (`-XX`/multiple) → "rejected" (allowlist, like Front Desk). `info` → ".". No hidden hint command.
 
-### 3.6 Submits acumulados com feedback vivo
-88 submits (22 candidatos × 4 variantes de hash) = todos `incorrect.` (junk confirmou oráculo). Hash testado: sha256 do b64 sem `=`, com `=`, bytes raw, b64.strip(). Candidatos: IPs do laboratório e combos `:` (ambos sentidos), `ip.id`/`ipid`/`identification`/`icmp.ident`/`identifier`, `412`/`0x19c`, combos IP:campo, `background noise`/`noise`/`covert`. A variante de hash não é o bloqueio (b64-sem-`=` = exatamente a que funcionou no Duty Roster) — o bloqueio é a string da `answer`.
+### 3.6 Accumulated submits with live feedback
+88 submits (22 candidates × 4 hash variants) = all `incorrect.` (junk confirmed the oracle). Hash tested: sha256 of the b64 without `=`, with `=`, raw bytes, b64.strip(). Candidates: the lab IPs and `:` combos (both directions), `ip.id`/`ipid`/`identification`/`icmp.ident`/`identifier`, `412`/`0x19c`, IP:field combos, `background noise`/`noise`/`covert`. The hash variant is not the blocker (b64-without-`=` = exactly the one that worked in Duty Roster) — the blocker is the `answer` string.
 
-Rodada adicional: tupla estilo Duty-Roster (`who:where:proto:interval`, 12 variantes com os dois IPs, `icmp`/`echo`, `412`, e o intervalo em `ms`/`s`/valores inteiros, ambos sentidos) → todas `incorrect.`.
+Additional round: Duty-Roster-style tuple (`who:where:proto:interval`, 12 variants with the two IPs, `icmp`/`echo`, `412`, and the interval in `ms`/`s`/integer values, both directions) → all `incorrect.`.
 
-Total acumulado na sessão: ~190 submits sem hit.
+Total accumulated in the session: ~190 submits with no hit.
 
-## 4. O que não funcionou
+## 4. What didn't work
 
-| Hipótese | Resultado | Por quê |
+| Hypothesis | Result | Why |
 |---|---|---|
-| Payload do pacote carrega a mensagem | ✗ | É exatamente "onde um protocolo normal poria o dado" — o próprio enunciado diz que NÃO está lá; confirmado random/decoy. |
-| `reply ip.id` como canal encoberto clássico | ✗ | Parece canal encoberto, mas os deltas são ruído uniforme por design ("Background Noise"); decodes de bit-plane/alfabeto não deram ASCII. |
-| Keystream PRNG (MT19937/LCG) sobre payload ou delta de ip.id | parcialmente aberta | Randcrack direto não serve (só 8 bits/pkt); não foi possível confirmar seed pequeno brute-forçável no tempo disponível. |
-| Canal de timing inter-pacote | ✗ | Jitter contínuo (não quantizado); nenhum split/threshold deu ASCII. |
-| Ordem/permutação dos pacotes | ✗ | Seq estritamente sequencial dentro do round, sem permutação. |
-| ~190 candidatos de `answer` (IPs, ident, campos, tuplas estilo Duty Roster) × variantes de hash | ✗ | Todos `incorrect.`; variante de hash confirmada correta (igual Duty Roster), então o problema é a string/formato da `answer`, não o hash. |
+| The packet payload carries the message | ✗ | It is exactly "where a normal protocol would put the data" — the prompt itself says it is NOT there; confirmed random/decoy. |
+| `reply ip.id` as a classic covert channel | ✗ | Looks like a covert channel, but the deltas are uniform noise by design ("Background Noise"); bit-plane/alphabet decodes gave no ASCII. |
+| PRNG keystream (MT19937/LCG) over payload or ip.id delta | partially open | Direct randcrack does not work (only 8 bits/pkt); could not confirm a small brute-forceable seed in the available time. |
+| Inter-packet timing channel | ✗ | Continuous jitter (not quantized); no split/threshold gave ASCII. |
+| Packet order/permutation | ✗ | Strictly sequential seq within the round, no permutation. |
+| ~190 `answer` candidates (IPs, ident, fields, Duty-Roster-style tuples) × hash variants | ✗ | All `incorrect.`; hash variant confirmed correct (same as Duty Roster), so the problem is the `answer` string/format, not the hash. |
 
-## 5. Conclusão / próximos passos
+## 5. Conclusion / next steps
 
-Nenhum campo, timing, ordem ou payload do pcap carrega mensagem estável — é o próprio gimmick de "Background Noise". O bloqueio final é o **formato exato da `answer`** esperada pelo oráculo, que não está documentado no banner/help e não foi possível inferir por brute-force dirigido dentro do budget. Mesma parede observada nos desafios-irmãos da família "Recover what left" (`LookupDesk`, `Outbox`, `Front Desk`, `Long Call`).
+No field, timing, order, or payload of the pcap carries a stable message — it is the "Background Noise" gimmick itself. The final blocker is the **exact format of the `answer`** expected by the oracle, which is not documented in the banner/help and could not be inferred by directed brute-force within the budget. Same wall observed in the sibling challenges of the "Recover what left" family (`LookupDesk`, `Outbox`, `Front Desk`, `Long Call`).
 
-Próximos passos (ordem de ROI):
-1. Obter a convenção exata de `answer` dessa família com quem resolveu `Duty Roster` (350 pts) — venceu com `who:where:port:interval`, itens nomeados pelo enunciado da plataforma, separados por `:`.
-2. Reler o card literal de "Background Noise" na plataforma — "Recover what left" é paráfrase; o card provavelmente nomeia o campo/host/valor exato a submeter.
-3. Com o formato correto, um brute dirigido curto numa única sessão sobre os IPs do pcap, ICMP echo, ident 412 e `ip.id` deve bastar — blind brute já está esgotado (0 hit em ~190 submits acumulados), não insistir nessa via.
+Next steps (order of ROI):
+1. Obtain the exact `answer` convention of this family from whoever solved `Duty Roster` (350 pts) — won with `who:where:port:interval`, items named by the platform prompt, separated by `:`.
+2. Re-read the literal "Background Noise" card on the platform — "Recover what left" is a paraphrase; the card probably names the exact field/host/value to submit.
+3. With the correct format, a short directed brute in a single session over the pcap IPs, ICMP echo, ident 412 and `ip.id` should suffice — blind brute is already exhausted (0 hit in ~190 accumulated submits), do not insist on that path.
 
 ---
 
-## Apêndice — ferramentas
+## Appendix — tools
 
-- Scripts de análise (fora deste diretório, scratchpad da sessão): `bn_sweep.py`/`bn_timing.py`/`bn_t2.py`/`bn_t3.py`/`bn_order.py`/`bn_seqpay.py` (payload, timing, ordem), `bn_gaps.py` (gaps de ip.id), `bn_xsess.py` (diff cross-sessão), `bn_sub.py`/`bn_live.py` (harness de submit com feedback), `bn_help.py`/`bn_bare.py` (probe de banner/tcpdump).
+- Analysis scripts (outside this directory, session scratchpad): `bn_sweep.py`/`bn_timing.py`/`bn_t2.py`/`bn_t3.py`/`bn_order.py`/`bn_seqpay.py` (payload, timing, order), `bn_gaps.py` (ip.id gaps), `bn_xsess.py` (cross-session diff), `bn_sub.py`/`bn_live.py` (submit harness with feedback), `bn_help.py`/`bn_bare.py` (banner/tcpdump probe).

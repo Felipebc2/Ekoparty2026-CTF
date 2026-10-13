@@ -6,13 +6,15 @@
 
 </div>
 
+<p align="center"><b>English</b> · <a href="WRITEUP.es.md">Español</a> · <a href="WRITEUP.pt-BR.md">Português (BR)</a></p>
+
 # Assembly Floor — WEB3 · 400 pts · 🟡 MEDIUM
 
-- **Status:** ✅ RESOLVIDO — flash loan do governance token + voto sem snapshot drena a treasury; `isSolved()` true.
+- **Status:** ✅ SOLVED — flash loan of the governance token + vote without snapshot drains the treasury; `isSolved()` true.
 - **Flag:** `HIK_WEB3_GOVERNANCE_15b08a0f18c1597b0a59df205b66dfc2`
-- **Flag format:** `HIK_[texto]_[md5]`
-- **Acesso:** chainId 31337 (Anvil) · RPC `https://<RPC>` · launcher `https://<HOST>`
-- **Enunciado:** *"The treasury is behind a vote. You have a seat. Make `Setup.isSolved()` return true."*
+- **Flag format:** `HIK_[text]_[md5]`
+- **Access:** chainId 31337 (Anvil) · RPC `https://<RPC>` · launcher `https://<HOST>`
+- **Prompt:** *"The treasury is behind a vote. You have a seat. Make `Setup.isSolved()` return true."*
 
 CTF: Ekoparty BA 2026 / Hack in Cariri.
 
@@ -20,78 +22,78 @@ CTF: Ekoparty BA 2026 / Hack in Cariri.
 
 ## 0. TL;DR
 
-1. Sem source (decompile via heimdall): `Setup` + token `HIKG` + pool de flash loan + DAO Governor + treasury; `isSolved() == (treasury.balance == 0)`.
-2. `vote()` soma o `balanceOf(msg.sender)` atual (sem snapshot) e o pool empresta o governance token sem fee -> poder de voto emprestado fica gravado no storage mesmo após devolver o empréstimo.
-3. Flash loan -> `propose` -> `vote` -> devolve, na mesma tx; depois `evm_increaseTime` para `queue` e `execute` -> `treasury.spend(player, 50 ether)`. `proof = "0"`.
+1. No source (decompile via heimdall): `Setup` + token `HIKG` + flash loan pool + DAO Governor + treasury; `isSolved() == (treasury.balance == 0)`.
+2. `vote()` sums the current `balanceOf(msg.sender)` (no snapshot) and the pool lends the governance token with no fee -> the borrowed voting power stays written in storage even after returning the loan.
+3. Flash loan -> `propose` -> `vote` -> return, in the same tx; then `evm_increaseTime` to `queue` and `execute` -> `treasury.spend(player, 50 ether)`. `proof = "0"`.
 
-### Cadeia que fechou
-1. `Attacker.attack(6000e18)` -> flash loan, callback faz `propose(treasury, 0, spend(player, 50 ether))` + `vote(id)` (6000e18 >= quorum 5000e18) + devolve o empréstimo.
-2. `evm_increaseTime` >3600s -> `queue(id)`; de novo >3600s -> `execute(id)` -> treasury zerada.
+### Chain that closed
+1. `Attacker.attack(6000e18)` -> flash loan, the callback does `propose(treasury, 0, spend(player, 50 ether))` + `vote(id)` (6000e18 >= quorum 5000e18) + returns the loan.
+2. `evm_increaseTime` >3600s -> `queue(id)`; again >3600s -> `execute(id)` -> treasury zeroed.
 3. `cast call Setup "isSolved()(bool)"` -> `true`.
 4. `GET /instance.json` -> `GET /ticket` -> `POST /flag {ticket, token=sha256("<ticket>:0")}` -> flag.
 
 ---
 
-## 1. Artefatos
+## 1. Artifacts
 
-- `Attacker.sol` — contrato atacante (flash loan + propose + vote numa tx).
+- `Attacker.sol` — attacker contract (flash loan + propose + vote in one tx).
 
-Instância:
-- Setup: `0xdbdee9d5f90b4250d120b10e0382ddfff1df58c2` (instância colada no prompt, playerId 2).
-- **Gotcha:** a instância do prompt não tinha cookie `hik_team`. O primeiro `GET /instance.json` real rotacionou pra instância nova (playerId 15, setup `0x907680059a9f0755015ee07d03cd9f56fc27c4fa`). Resolvido nas duas; a nova (ligada ao cookie) é a que contou pro `/flag`.
+Instance:
+- Setup: `0xdbdee9d5f90b4250d120b10e0382ddfff1df58c2` (instance pasted in the prompt, playerId 2).
+- **Gotcha:** the prompt instance had no `hik_team` cookie. The first real `GET /instance.json` rotated to a new instance (playerId 15, setup `0x907680059a9f0755015ee07d03cd9f56fc27c4fa`). Solved on both; the new one (tied to the cookie) is the one that counted for `/flag`.
 
-## 2. Entrega / validação
+## 2. Delivery / validation
 
-- `proof = "0"` (padrão Night Deposit: valor que `isSolved` valida — `treasury.balance == 0`). Acertou de primeira.
-- `GET /instance.json` (salva cookie `hik_team`) -> `GET /ticket` (TTL 45s) -> `token = sha256("<ticket>:0")` -> `POST /flag {ticket,token}` com o cookie.
+- `proof = "0"` (Night Deposit pattern: value that `isSolved` validates — `treasury.balance == 0`). Hit it on the first try.
+- `GET /instance.json` (saves the `hik_team` cookie) -> `GET /ticket` (TTL 45s) -> `token = sha256("<ticket>:0")` -> `POST /flag {ticket,token}` with the cookie.
 - **Flag:** `HIK_WEB3_GOVERNANCE_15b08a0f18c1597b0a59df205b66dfc2`
 
-## 3. Análise
+## 3. Analysis
 
-### 3.1 Recon (sem source, decompile via heimdall)
+### 3.1 Recon (no source, decompile via heimdall)
 
-`Setup` expõe `dao()`, `treasury()`, `token()`, `flash()`, `player()`.
+`Setup` exposes `dao()`, `treasury()`, `token()`, `flash()`, `player()`.
 
-- `isSolved() == (treasury.balance == 0)` -> objetivo: **drenar o ETH da treasury**.
-- `token` (HIKG, 18 dec): ERC20 simples. `mint()` só pelo próprio Setup (inacessível).
-- `flash`: pool com **10000e18 HIKG** parados. `flashLoan(uint256 amount, address receiver, bytes data)` (selector `0x2bd94e9c`): transfere o token pro receiver, chama o callback `0x79b2fae8(amount)`, e só valida que o saldo do pool voltou ao original. **Sem fee, sem controle de quem empresta.**
-- `dao` (Governor): `propose(target,value,data)` (threshold 1000e18 `balanceOf`), `vote(id)` (**soma `balanceOf(msg.sender)` atual — sem snapshot**), `queue(id)` (quorum 5000e18 + janela de 3600s encerrada), `execute(id)` (após timelock 3600s, low-level call com `target/value/data`).
-- `treasury.spend(address,uint256)` é `onlyDao` — único caminho de saque.
-- Player tinha só 1e18 HIKG (< threshold). Sem o flash loan, não propõe nem atinge quorum.
+- `isSolved() == (treasury.balance == 0)` -> goal: **drain the treasury's ETH**.
+- `token` (HIKG, 18 dec): simple ERC20. `mint()` only by Setup itself (inaccessible).
+- `flash`: pool with **10000e18 HIKG** sitting idle. `flashLoan(uint256 amount, address receiver, bytes data)` (selector `0x2bd94e9c`): transfers the token to the receiver, calls the callback `0x79b2fae8(amount)`, and only validates that the pool balance returned to the original. **No fee, no control of who borrows.**
+- `dao` (Governor): `propose(target,value,data)` (threshold 1000e18 `balanceOf`), `vote(id)` (**sums the current `balanceOf(msg.sender)` — no snapshot**), `queue(id)` (quorum 5000e18 + 3600s window closed), `execute(id)` (after a 3600s timelock, low-level call with `target/value/data`).
+- `treasury.spend(address,uint256)` is `onlyDao` — the only withdrawal path.
+- Player had only 1e18 HIKG (< threshold). Without the flash loan, cannot propose or reach quorum.
 
-### 3.2 Vetor — flash-loan governance (sem snapshot de voto)
+### 3.2 Vector — flash-loan governance (no vote snapshot)
 
-Não documentado no Arsenal; derivado do bytecode e confirmado por execução.
+Not documented in the Arsenal; derived from the bytecode and confirmed by execution.
 
-A ausência de snapshot em `vote()` + flash loan público do próprio governance token = poder de voto emprestado dentro de uma tx fica **gravado permanentemente** no storage mesmo após devolver o empréstimo.
+The absence of a snapshot in `vote()` + public flash loan of the governance token itself = borrowed voting power inside a tx stays **permanently written** in storage even after returning the loan.
 
-**Numa única tx** (`Attacker.sol`):
-1. flash loan de 6000e18 HIKG -> callback;
+**In a single tx** (`Attacker.sol`):
+1. flash loan of 6000e18 HIKG -> callback;
 2. `propose(treasury, 0, spend(player, 50 ether))`;
-3. `vote(id)` com peso 6000e18 (>= quorum 5000e18 — fecha quorum);
-4. devolver o empréstimo ao pool.
+3. `vote(id)` with weight 6000e18 (>= quorum 5000e18 — closes quorum);
+4. return the loan to the pool.
 
-Fora da tx (RPC Anvil, `evm_increaseTime` habilitado; `anvil_mine` bloqueado mas não necessário):
-5. avançar >3600s -> `queue(id)`;
-6. avançar >3600s -> `execute(id)` -> `treasury.spend(player, 50 ether)` zera a treasury.
+Outside the tx (Anvil RPC, `evm_increaseTime` enabled; `anvil_mine` blocked but not needed):
+5. advance >3600s -> `queue(id)`;
+6. advance >3600s -> `execute(id)` -> `treasury.spend(player, 50 ether)` zeroes the treasury.
 
 `cast call Setup "isSolved()(bool)"` -> `true`.
 
-## 4. O que não funcionou
+## 4. What didn't work
 
-- `anvil_mine` bloqueado no RPC — não era necessário (`evm_increaseTime` bastou).
-- Instância colada manualmente no prompt sem cookie `hik_team` não vale para o `/flag` (ver gotcha em 1).
-- Sem tentativas falhas adicionais registradas.
+- `anvil_mine` blocked on the RPC — it was not needed (`evm_increaseTime` was enough).
+- Instance pasted manually in the prompt with no `hik_team` cookie does not count for `/flag` (see gotcha in 1).
+- No additional failed attempts recorded.
 
-## 5. Conclusão / próximos passos
+## 5. Conclusion / next steps
 
-Fechou porque `vote()` não faz snapshot e o flash loan do governance token é público e sem fee. Notas pro Arsenal (sugeridas):
-- Nova entrada `web3-governance-flashloan-vote-weight-no-snapshot.md`: Governor sem snapshot + flash loan do governance token -> drenar treasury via propose+vote na mesma tx, `evm_increaseTime` pra pular voting period + timelock.
-- Launcher host segue `web3-NN` espelhando `rpc-NN` (confirmado: `<HOST>` -> `<RPC>`; igual voucher-window).
-- Instância colada manualmente no prompt não tem cookie -> sempre fazer o primeiro `GET /instance.json` real pra fixar a instância que conta pro `/flag`.
+It closed because `vote()` does not snapshot and the flash loan of the governance token is public and fee-less. Notes for the Arsenal (suggested):
+- New entry `web3-governance-flashloan-vote-weight-no-snapshot.md`: Governor without snapshot + flash loan of the governance token -> drain the treasury via propose+vote in the same tx, `evm_increaseTime` to skip the voting period + timelock.
+- The launcher host follows `web3-NN` mirroring `rpc-NN` (confirmed: `<HOST>` -> `<RPC>`; same as voucher-window).
+- Instance pasted manually in the prompt has no cookie -> always do the first real `GET /instance.json` to pin the instance that counts for `/flag`.
 
 ---
 
-## Apêndice — ferramentas
+## Appendix — tools
 
-- `Attacker.sol` — contrato com `attack(uint256 amount)` (só owner): chama `flash.call(0x2bd94e9c, amount, address(this), "")`; o `fallback()` (callback do flash loan) faz `dao.propose(treasury, 0, spend(player, 50 ether))`, `dao.vote(id)` e devolve todo o saldo de token ao pool. Construtor: `(token, dao, flash, treasury, player)`. Uso: `attack(6000e18)`.
+- `Attacker.sol` — contract with `attack(uint256 amount)` (owner only): calls `flash.call(0x2bd94e9c, amount, address(this), "")`; the `fallback()` (flash loan callback) does `dao.propose(treasury, 0, spend(player, 50 ether))`, `dao.vote(id)` and returns the whole token balance to the pool. Constructor: `(token, dao, flash, treasury, player)`. Usage: `attack(6000e18)`.
