@@ -3,7 +3,7 @@
 #   flag=1 le DLL+0xe340..0xe3c0 (ponteiros vivos) -> flag=2 planta sc_absread -> flag=0 segue os ptrs.
 # Uso: python3 chase_e370.py
 import socket, struct, re, sys, os, time
-HOST, PORT = "63.183.92.113", 20269
+HOST, PORT = "<IP>", 20269
 COOKIE  = b"Ekoparty 2026 - Binary Gecko CTF challenge"
 HEALTHY = b"Welcome to this CTF\x00"
 SLOT    = 0x1620

@@ -4,7 +4,7 @@
 import sys, hashlib, requests
 from Crypto.Hash import keccak
 
-COOKIE = sys.argv[1] if len(sys.argv) > 1 else "hik_team=bdfa758e27a40f09"
+COOKIE = sys.argv[1] if len(sys.argv) > 1 else "hik_team=<COOKIE>"
 BASE = "https://<HOST>"
 HDR = {"Cookie": COOKIE}
 

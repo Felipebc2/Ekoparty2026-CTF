@@ -5,7 +5,7 @@
 #   - EXE 0x140000000 estendido (sem ASLR)
 # Para cedo cada range apos N paginas STALE/zero consecutivas. Uso: python3 scan_all.py
 import socket, struct, re, os, time
-HOST, PORT = "63.183.92.113", 20269
+HOST, PORT = "<IP>", 20269
 COOKIE  = b"Ekoparty 2026 - Binary Gecko CTF challenge"
 HEALTHY = b"Welcome to this CTF\x00"
 SLOT    = 0x1620

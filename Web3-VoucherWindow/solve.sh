@@ -5,8 +5,8 @@
 # isSolved() requires token.balanceOf(player) >= 1000e18  ->  10 replays.
 set -euo pipefail
 
-RPC=https://<HOST>
-PK=0xe65d5fce1e1183633eec5698a4a979f9821d01a03839f8d3af74d4813d1ae73c
+RPC="https://<HOST>"
+PK="<PK>"
 PLAYER=0xa492885c4252F269Dd133944684F0dF09CEB2661
 SETUP=0x5f1a36ec7740154b4b43cc8601e536d40da3ebe8
 TOKEN=0x0a230d4233594a6Fad2628efC2b9684EEE0D2FD1

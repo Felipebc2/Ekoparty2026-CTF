@@ -9,7 +9,7 @@
 # Para outra faixa: V=0x140000000 python3 scan_base.py   (EXE preferido)  / V=<hex> p/ base ASLR.
 # NAO usa flag=0 -> nao dispara o shellcode one-shot -> processo sobrevive -> varre a vontade.
 import socket, struct, re, os, time
-HOST, PORT = "63.183.92.113", 20269
+HOST, PORT = "<IP>", 20269
 COOKIE  = b"Ekoparty 2026 - Binary Gecko CTF challenge"
 HEALTHY = b"Welcome to this CTF\x00"
 E360    = 0xe360

@@ -2,7 +2,7 @@
 # Re-dump da DLL do chall2 (imagem mudou vs chall1). Varre counter 0..0x13000 (0x1000/read),
 # encadeia na mesma conexao (flag=1), salva module_dump_chall2.bin, procura "FLAG:" e HIK.
 import socket, struct, re, sys, time
-HOST, PORT = "63.183.92.113", 20269
+HOST, PORT = "<IP>", 20269
 COOKIE = b"Ekoparty 2026 - Binary Gecko CTF challenge"
 HEALTHY = b"Welcome to this CTF\x00"
 HIK = re.compile(rb'HIK_[\x20-\x7e]{4,300}')

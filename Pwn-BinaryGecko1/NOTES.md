@@ -1,6 +1,6 @@
 # First Chall by Binary Gecko — PWN (Ekoparty BA 2026)
 
-**Alvo remoto:** `63.183.92.113:<PORT>` (processo Windows, restart ~10 min)
+**Alvo remoto:** `<IP>:<PORT>` (processo Windows, restart ~10 min)
 **Binário:** `chall.exe` (PE32+ x64, console, 5 seções, ~53.5 KB) — idêntico ao `gecko2026.exe` servido no `:8080`.
 **sha256:** `c1e76e39d899d32012f0ef5e2b9e5223f35309da1c4207145a685df4c452e8de`
 **Flag format:** `HIK_<texto>_<hash_MD5(32 hex)>`
@@ -181,7 +181,7 @@ lendo `LEN` bytes de volta. Escalar `LEN`: `0x1000 → 0x8000 → 0xffff`. Procu
 
 Sessão focada em adquirir a DLL por canais externos e em achar vuln alternativa. **Veredicto: todos os caminhos técnicos esgotados; só resta ação humana via plataforma/organizador.**
 
-## Reconhecimento de rede ao host (`63.183.92.113`)
+## Reconhecimento de rede ao host (`<IP>`)
 
 Confirmado: host é **EC2 em `eu-central-1`** (`ec2-63-183-92-113.eu-central-1.compute.amazonaws.com`), com Security Group em `default DROP + whitelist`. Portas abertas no mundo todo:
 

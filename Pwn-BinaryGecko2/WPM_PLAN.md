@@ -2,7 +2,7 @@
 
 **Status:** aprovado pelo coordenador em **MODO DESENHO apenas** (2026-10-09). Este documento é
 plano + shellcode já montado — **NÃO** existe aqui nenhum código que conecte ao alvo remoto.
-Qualquer disparo contra `63.183.92.113:<PORT>` precisa de novo checkpoint explícito do usuário.
+Qualquer disparo contra `<IP>:<PORT>` precisa de novo checkpoint explícito do usuário.
 
 ## FATOS (confirmados por disassembly estático local — nenhuma conexão nova ao alvo nesta sessão)
 

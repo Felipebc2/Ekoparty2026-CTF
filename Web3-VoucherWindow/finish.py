@@ -2,7 +2,7 @@
 # Voucher Window — fecha a flag quando você tiver o PROOF da track README.
 # Uso: python3 finish.py '<proof>'   (proof = valor hex lowercase, sem 0x p/ address)
 import sys, hashlib, urllib.request, urllib.error, json
-COOKIE = "hik_team=bdfa758e27a40f09"
+COOKIE = "hik_team=<COOKIE>"
 BASE   = "https://<HOST>"
 proof  = sys.argv[1]
 

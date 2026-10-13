@@ -4,7 +4,7 @@
 # 1 conexao por invocacao; encadeia os reads da LISTA (gate flag=1 fica aberto). Guard de banner.
 # Reads arriscados (possivelmente nao-mapeados) por ULTIMO: o 1o que fechar mata o resto do chain.
 import socket, struct, re, sys, time
-HOST, PORT = "63.183.92.113", 20269
+HOST, PORT = "<IP>", 20269
 COOKIE = b"Ekoparty 2026 - Binary Gecko CTF challenge"
 HEALTHY = b"Welcome to this CTF\x00"
 HIK = re.compile(rb'HIK_[\x20-\x7e]{4,300}')

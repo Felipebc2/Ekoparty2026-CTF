@@ -6,7 +6,7 @@ set -u
 CAST="${CAST:-$HOME/.config/.foundry/bin/cast}"
 RPC="<HOST>"
 BASE="<HOST>"
-COOKIE="hik_team=0220b160543026b0"        # <-- ATUALIZE se mudou no navegador
+COOKIE="hik_team=<COOKIE>"        # <-- ATUALIZE se mudou no navegador
 
 j() { python3 -c "import sys,json;print(json.load(sys.stdin)$1)"; }
 

@@ -20,7 +20,7 @@ from eth_account import Account
 
 RPC  = "<HOST>"
 BASE = "<HOST>"
-COOKIE = {"hik_team": "0220b160543026b0"}   # <-- ATUALIZE se mudou no navegador
+COOKIE = {"hik_team": "<COOKIE>"}   # <-- ATUALIZE se mudou no navegador
 
 S = requests.Session(); S.cookies.update(COOKIE)
 

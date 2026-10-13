@@ -6,7 +6,7 @@
 # Se o banner vier degradado na reconexao => janela acabou => para.
 # Uso: python3 scan_env.py       /  FORCE=1 python3 scan_env.py
 import socket, struct, re, os, time
-HOST, PORT = "63.183.92.113", 20269
+HOST, PORT = "<IP>", 20269
 COOKIE  = b"Ekoparty 2026 - Binary Gecko CTF challenge"
 HEALTHY = b"Welcome to this CTF\x00"
 SLOT    = 0x1620

@@ -15,7 +15,7 @@
 > pronto: `exploit_leftover.py`. As seções abaixo com "bloqueio / precisa da DLL" estão SUPERADAS.
 
 ## O desafio
-- Processo **Windows remoto** em `63.183.92.113:<PORT>`. Reinicia a cada ~10 min.
+- Processo **Windows remoto** em `<IP>:<PORT>`. Reinicia a cada ~10 min.
 - Enunciado (resumo): obter 1 ou 2 flags **contidas na memória do processo**. Só se fornece um **EXE**;
   *"los demás archivos deben descubrirse utilizando métodos válidos dentro del alcance"*.
 - Hint do coordenador: **"está na memória"** → é leak de memória, não RCE.

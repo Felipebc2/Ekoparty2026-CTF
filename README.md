@@ -26,6 +26,7 @@
 (<code>&lt;HOST&gt;</code>, <code>&lt;IP&gt;</code>, <code>&lt;RPC&gt;</code>, <code>&lt;PORT&gt;</code>). Flags e metodologia mantidas.<br>
 Status: ✅ resolvido · 🟡 em aberto.</p>
 <p>As tabelas de desafios (nomes, pontos e status) estão na seção em inglês abaixo e valem para todos os idiomas.</p>
+<p>Todos os writeups seguem o <a href="WRITEUP_TEMPLATE.md"><code>WRITEUP_TEMPLATE.md</code></a> — copie-o para novos desafios.</p>
 
 </details>
 
@@ -51,6 +52,7 @@ Status: ✅ resolvido · 🟡 em aberto.</p>
 (<code>&lt;HOST&gt;</code>, <code>&lt;IP&gt;</code>, <code>&lt;RPC&gt;</code>, <code>&lt;PORT&gt;</code>). Se mantienen las flags y la metodología.<br>
 Estado: ✅ resuelto · 🟡 pendiente.</p>
 <p>Las tablas de desafíos (nombres, puntos y estado) están en la sección en inglés más abajo y aplican a todos los idiomas.</p>
+<p>Todos los writeups siguen el <a href="WRITEUP_TEMPLATE.md"><code>WRITEUP_TEMPLATE.md</code></a> — cópialo para nuevos desafíos.</p>
 
 </details>
 
@@ -82,6 +84,8 @@ Estado: ✅ resuelto · 🟡 pendiente.</p>
 <p>Live credentials (private keys, session cookies) and infrastructure endpoints were removed/anonymized
 (<code>&lt;HOST&gt;</code>, <code>&lt;IP&gt;</code>, <code>&lt;RPC&gt;</code>, <code>&lt;PORT&gt;</code>). Flags and methodology kept.<br>
 Status: ✅ solved · 🟡 open.</p>
+<p>Every writeup follows <a href="WRITEUP_TEMPLATE.md"><code>WRITEUP_TEMPLATE.md</code></a> (header, TL;DR, artifacts, delivery, analysis, what didn't work, conclusion). Copy it for new challenges.<br>
+Difficulty: 🟢 easy · 🟡 medium · 🔴 hard.</p>
 
 <h3>Malware</h3>
 <table>
@@ -105,7 +109,7 @@ Status: ✅ solved · 🟡 open.</p>
   <tr><td><a href="Web3-NightDeposit/">Night Deposit</a></td><td>350</td><td>✅</td></tr>
   <tr><td><a href="Web3-VoucherWindow/">Voucher Window</a></td><td>400</td><td>✅</td></tr>
   <tr><td><a href="Web3-MaintenanceHatch/">Maintenance Hatch</a></td><td>500</td><td>✅</td></tr>
-  <tr><td><a href="Web3-CarcaraMarkets/">Carcara Markets</a></td><td>450</td><td>🟡</td></tr>
+  <tr><td><a href="Web3-CarcaraMarkets/">Carcara Markets</a></td><td>450</td><td>✅</td></tr>
 </table>
 
 <h3>Packet / Net</h3>
@@ -115,7 +119,7 @@ Status: ✅ solved · 🟡 open.</p>
   <tr><td><a href="Net-Helpdesk/">Helpdesk</a></td><td>300</td><td>✅</td></tr>
   <tr><td><a href="Net-DutyRoster/">Duty Roster</a></td><td>350</td><td>✅</td></tr>
   <tr><td><a href="Net-LongCall/">Long Call</a></td><td>200</td><td>✅</td></tr>
-  <tr><td><a href="Net-BackgroundNoise/">Background Noise</a></td><td>—</td><td>🟡</td></tr>
+  <tr><td><a href="Net-BackgroundNoise/">Background Noise</a></td><td>700</td><td>🟡</td></tr>
   <tr><td><a href="Net-Outbox/">Outbox</a></td><td>300</td><td>🟡</td></tr>
   <tr><td><a href="Net-LookupDesk/">Lookup Desk</a></td><td>300</td><td>🟡</td></tr>
 </table>
@@ -139,7 +143,7 @@ Status: ✅ solved · 🟡 open.</p>
 <h3>Pwn / Binary Exploitation</h3>
 <table>
   <tr><th>Challenge</th><th>Pts</th><th>Status</th></tr>
-  <tr><td><a href="Pwn-BinaryGecko1/">First Chall by Binary Gecko</a></td><td>200</td><td>🟡</td></tr>
+  <tr><td><a href="Pwn-BinaryGecko1/">First Chall by Binary Gecko</a></td><td>200</td><td>✅</td></tr>
   <tr><td><a href="Pwn-BinaryGecko2/">Second Chall by Binary Gecko</a></td><td>400</td><td>🟡</td></tr>
   <tr><td><a href="Pwn-ZMjs/">ZM.js</a></td><td>400</td><td>✅</td></tr>
 </table>
