@@ -2,7 +2,7 @@
 
 <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&duration=700&pause=1000&color=7EF700&center=true&vCenter=true&repeat=false&width=300&height=35&lines=EKOPARTY+2026+CTF+" alt="Typing SVG" /></a>
 
-<p><img src="hackincariri.webp" alt="Hack in Cariri" height="600"></p>
+<p><img src="img/hackincariri.webp" alt="Hack in Cariri" height="600"></p>
 
 <details>
 <summary><b>🇧🇷 Português</b></summary>
@@ -71,12 +71,12 @@ Estado: ✅ resuelto · 🟡 pendiente.</p>
 </table>
 
 <h3>Felipebc2</h3>
-<p><img src="event.png" alt="EkoParty 2026 — Felipebc2 event card" height="300"></p>
-<p><img src="profile.png" alt="Felipebc2 profile" width="900"></p>
+<p><img src="img/event.png" alt="EkoParty 2026 — Felipebc2 event card" height="300"></p>
+<p><img src="img/profile.png" alt="Felipebc2 profile" width="900"></p>
 
 <h3><a href="https://github.com/samuka7abr">Samuel Abrão</a> — Samuka7abr</h3>
-<p><img src="samuel-event.jpeg" alt="EkoParty 2026 — Samuka7abr event card" height="300"></p>
-<p><img src="samuel-profile.png" alt="Samuka7abr profile" width="900"></p>
+<p><img src="img/samuel-event.jpeg" alt="EkoParty 2026 — Samuka7abr event card" height="300"></p>
+<p><img src="img/samuel-profile.png" alt="Samuka7abr profile" width="900"></p>
 
 <h2>Challenges</h2>
 <p>Live credentials (private keys, session cookies) and infrastructure endpoints were removed/anonymized
@@ -150,7 +150,7 @@ Status: ✅ solved · 🟡 open.</p>
   <tr><td><a href="Game-DarkSouls/">Dark Souls</a></td><td>500</td><td>🟡</td></tr>
 </table>
 
-<p><img src="logo.webp" alt="Ekoparty 2026 CTF" height="480"></p>
+<p><img src="img/logo.webp" alt="Ekoparty 2026 CTF" height="480"></p>
 
 <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&duration=700&pause=1000&color=F7009F&center=true&vCenter=true&repeat=false&width=300&height=35&lines=2026+CTF+" alt="Typing SVG" /></a>
 
