@@ -1,5 +1,6 @@
-
-
+<p align="center">
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&duration=700&pause=1000&color=7EF700&center=true&vCenter=true&repeat=false&width=300&height=35&lines=EKOPARTY+2026+CTF+" alt="Typing SVG" /></a>
+</p>
 <p align="center">
   <img src="hackincariri.webp" alt="Hack in Cariri" height="600">
 </p>
@@ -147,4 +148,7 @@ Writeups and artifacts for the **EkoParty 2026 CTF** (Hack in Cariri) challenges
 
 <p align="center">
   <img src="logo.webp" alt="Ekoparty 2026 CTF" height="480">
+</p>
+<p align="center">
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&duration=700&pause=1000&color=F7009F&center=true&vCenter=true&repeat=false&width=300&height=35&lines=2026+CTF+" alt="Typing SVG" /></a>
 </p>
