@@ -1,0 +1,11 @@
+{
+  "title": "Carcara Markets",
+  "chainId": 31337,
+  "rpc": "<RPC>",
+  "playerId": "<REDACTED>",
+  "player": "<REDACTED>",
+  "playerPrivateKey": "<REDACTED>",
+  "contracts": {
+    "setup": "0x4714c74ef1abf644b4df9208da0513d58f3d0efa"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Maintenance Hatch",
+  "chainId": 31337,
+  "rpc": "<RPC>",
+  "playerId": "<REDACTED>",
+  "player": "<REDACTED>",
+  "playerPrivateKey": "<REDACTED>",
+  "contracts": {
+    "setup": "0x6c24779e4f2ac861422b8cd4f1c0f9ee88cfe5e2"
+  }
+}

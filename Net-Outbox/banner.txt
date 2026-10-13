@@ -1,0 +1,5 @@
+Outbox — 300 pts
+session 120s
+sid d7ce1ac107efb8823fabf63593f53dfe
+help | capture [sec] | getpcap | tcpdump | submit <proof> | quit
+> 
