@@ -18,7 +18,7 @@
 <table>
   <tr><th>Time</th><th>Colocação</th><th>Jogador</th><th>Especialidade</th><th>Pontos</th><th>Resolvidos</th><th>First Blood</th></tr>
   <tr><td rowspan="2"><code>nop</code></td><td rowspan="2"><b>4º</b></td><td><a href="https://github.com/Felipebc2">Felipebc2</a></td><td>Web3</td><td>3320</td><td>11</td><td>2</td></tr>
-  <tr><td><a href="https://github.com/samuka7abr">Samuka7abr</a> (Samuel Abrão)</td><td>Reverse</td><td>7100</td><td>23</td><td>0</td></tr>
+  <tr><td><a href="https://github.com/samuka7abr">Samuka7abr</a></td><td>Reverse</td><td>7100</td><td>23</td><td>0</td></tr>
 </table>
 
 <h3>Desafios</h3>
@@ -43,7 +43,7 @@ Status: ✅ resolvido · 🟡 em aberto.</p>
 <table>
   <tr><th>Equipo</th><th>Posición</th><th>Jugador</th><th>Especialidad</th><th>Puntos</th><th>Resueltos</th><th>First Blood</th></tr>
   <tr><td rowspan="2"><code>nop</code></td><td rowspan="2"><b>4º</b></td><td><a href="https://github.com/Felipebc2">Felipebc2</a></td><td>Web3</td><td>3320</td><td>11</td><td>2</td></tr>
-  <tr><td><a href="https://github.com/samuka7abr">Samuka7abr</a> (Samuel Abrão)</td><td>Reverse</td><td>7100</td><td>23</td><td>0</td></tr>
+  <tr><td><a href="https://github.com/samuka7abr">Samuka7abr</a></td><td>Reverse</td><td>7100</td><td>23</td><td>0</td></tr>
 </table>
 
 <h3>Desafíos</h3>
@@ -67,7 +67,7 @@ Estado: ✅ resuelto · 🟡 pendiente.</p>
 <table>
   <tr><th>Team</th><th>Rank</th><th>Player</th><th>Specialty</th><th>Points</th><th>Solved</th><th>First Blood</th></tr>
   <tr><td rowspan="2"><code>nop</code></td><td rowspan="2"><b>4th</b></td><td><a href="https://github.com/Felipebc2">Felipebc2</a></td><td>Web3</td><td>3320</td><td>11</td><td>2</td></tr>
-  <tr><td><a href="https://github.com/samuka7abr">Samuka7abr</a> (Samuel Abrão)</td><td>Reverse</td><td>7100</td><td>23</td><td>0</td></tr>
+  <tr><td><a href="https://github.com/samuka7abr">Samuka7abr</a></td><td>Reverse</td><td>7100</td><td>23</td><td>0</td></tr>
 </table>
 
 <h3>Felipebc2</h3>
