@@ -72,11 +72,11 @@ Estado: ✅ resuelto · 🟡 pendiente.</p>
   <tr><td><a href="https://github.com/samuka7abr">Samuka7abr</a></td><td>Reverse</td><td>7100</td><td>23</td><td>0</td></tr>
 </table>
 
-<h3>Felipebc2</h3>
+<h3><a href="https://github.com/felipebc2"></a>Felipebc2</h3>
 <p><img src="img/event.png" alt="EkoParty 2026 — Felipebc2 event card" height="300"></p>
 <p><img src="img/profile.png" alt="Felipebc2 profile" width="900"></p>
 
-<h3><a href="https://github.com/samuka7abr">Samuel Abrão</a> — Samuka7abr</h3>
+<h3><a href="https://github.com/samuka7abr"></a>Samuka7abr</h3>
 <p><img src="img/samuel-event.jpeg" alt="EkoParty 2026 — Samuka7abr event card" height="300"></p>
 <p><img src="img/samuel-profile.png" alt="Samuka7abr profile" width="900"></p>
 
