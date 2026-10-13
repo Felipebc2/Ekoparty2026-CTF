@@ -1,13 +1,11 @@
+
+
 <p align="center">
-  <img src="logo.webp" alt="Ekoparty 2026 CTF" height="120">
-  &nbsp;&nbsp;&nbsp;
-  <img src="hackincariri.webp" alt="Hack in Cariri" height="120">
+  <img src="hackincariri.webp" alt="Hack in Cariri" height="600">
 </p>
 
-<p align="center"><b>English</b> (default) · Português and Español below ⬇</p>
-
-<details>
-<summary><b>🇧🇷 Português</b> — clique para expandir</summary>
+<details align="center">
+<summary><b>🇧🇷 Português</b></summary>
 
 ## EKOPARTY 2026 — CTF
 
@@ -32,8 +30,8 @@ As tabelas de desafios (nomes, pontos e status) estão na seção em inglês aba
 
 </details>
 
-<details>
-<summary><b>🇦🇷 Español</b> — clic para expandir</summary>
+<details align="center">
+<summary><b>🇦🇷 Español</b></summary>
 
 ## EKOPARTY 2026 — CTF
 
@@ -146,3 +144,7 @@ Writeups and artifacts for the **EkoParty 2026 CTF** (Hack in Cariri) challenges
 | Challenge | Pts | Status |
 |---|---|---|
 | [Dark Souls](Game-DarkSouls/) | 500 | 🟡 |
+
+<p align="center">
+  <img src="logo.webp" alt="Ekoparty 2026 CTF" height="480">
+</p>
