@@ -1,154 +1,157 @@
-<p align="center">
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&duration=700&pause=1000&color=7EF700&center=true&vCenter=true&repeat=false&width=300&height=35&lines=EKOPARTY+2026+CTF+" alt="Typing SVG" /></a>
-</p>
-<p align="center">
-  <img src="hackincariri.webp" alt="Hack in Cariri" height="600">
-</p>
+<div align="center">
 
-<details align="center">
+<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&duration=700&pause=1000&color=7EF700&center=true&vCenter=true&repeat=false&width=300&height=35&lines=EKOPARTY+2026+CTF+" alt="Typing SVG" /></a>
+
+<p><img src="hackincariri.webp" alt="Hack in Cariri" height="600"></p>
+
+<details>
 <summary><b>🇧🇷 Português</b></summary>
 
-## EKOPARTY 2026 — CTF
+<h2>EKOPARTY 2026 — CTF</h2>
+<p>Writeups e artefatos dos desafios do <b>EkoParty 2026 CTF</b> (Hack in Cariri), Buenos Aires, Argentina.</p>
+<p>
+  <b>Evento:</b> <code>app.hackincariri.com.br/events/de258172-f35b-4db2-b689-a7369edf8ac4</code><br>
+  <b>Data:</b> 9 de outubro de 2026 · 10:00–15:00 · <b>Finalizado</b>
+</p>
 
-Writeups e artefatos dos desafios do **EkoParty 2026 CTF** (Hack in Cariri), Buenos Aires, Argentina.
+<h3>Resultado</h3>
+<table>
+  <tr><th>Time</th><th>Colocação</th><th>Jogador</th><th>Especialidade</th><th>Pontos</th><th>Resolvidos</th><th>First Blood</th></tr>
+  <tr><td rowspan="2"><code>nop</code></td><td rowspan="2"><b>4º</b></td><td><a href="https://github.com/Felipebc2">Felipebc2</a></td><td>Web3</td><td>3320</td><td>11</td><td>2</td></tr>
+  <tr><td><a href="https://github.com/samuka7abr">Samuka7abr</a> (Samuel Abrão)</td><td>Reverse</td><td>7100</td><td>23</td><td>0</td></tr>
+</table>
 
-- **Evento:** `app.hackincariri.com.br/events/de258172-f35b-4db2-b689-a7369edf8ac4`
-- **Data:** 9 de outubro de 2026 · 10:00–15:00 · **Finalizado**
-
-### Resultado
-
-| Time | Colocação | Pontos | Jogador | Resolvidos | First Blood |
-|---|---|---|---|---|---|
-| `nop` | **4º** | 3320 | Felipebc2 (Web3) | 11 | 2 |
-
-### Desafios
-
-> Credenciais vivas (private keys, cookies de sessão) e endpoints de infra foram
-> removidos/anonimizados (`<HOST>`, `<IP>`, `<RPC>`, `<PORT>`). Flags e metodologia
-> mantidas. Status: ✅ resolvido · 🟡 em aberto.
-
-As tabelas de desafios (nomes, pontos e status) estão na seção em inglês abaixo e valem para todos os idiomas.
+<h3>Desafios</h3>
+<p>Credenciais vivas (private keys, cookies de sessão) e endpoints de infra foram removidos/anonimizados
+(<code>&lt;HOST&gt;</code>, <code>&lt;IP&gt;</code>, <code>&lt;RPC&gt;</code>, <code>&lt;PORT&gt;</code>). Flags e metodologia mantidas.<br>
+Status: ✅ resolvido · 🟡 em aberto.</p>
+<p>As tabelas de desafios (nomes, pontos e status) estão na seção em inglês abaixo e valem para todos os idiomas.</p>
 
 </details>
 
-<details align="center">
+<details>
 <summary><b>🇦🇷 Español</b></summary>
 
-## EKOPARTY 2026 — CTF
+<h2>EKOPARTY 2026 — CTF</h2>
+<p>Writeups y artefactos de los desafíos del <b>EkoParty 2026 CTF</b> (Hack in Cariri), Buenos Aires, Argentina.</p>
+<p>
+  <b>Evento:</b> <code>app.hackincariri.com.br/events/de258172-f35b-4db2-b689-a7369edf8ac4</code><br>
+  <b>Fecha:</b> 9 de octubre de 2026 · 10:00–15:00 · <b>Finalizado</b>
+</p>
 
-Writeups y artefactos de los desafíos del **EkoParty 2026 CTF** (Hack in Cariri), Buenos Aires, Argentina.
+<h3>Resultado</h3>
+<table>
+  <tr><th>Equipo</th><th>Posición</th><th>Jugador</th><th>Especialidad</th><th>Puntos</th><th>Resueltos</th><th>First Blood</th></tr>
+  <tr><td rowspan="2"><code>nop</code></td><td rowspan="2"><b>4º</b></td><td><a href="https://github.com/Felipebc2">Felipebc2</a></td><td>Web3</td><td>3320</td><td>11</td><td>2</td></tr>
+  <tr><td><a href="https://github.com/samuka7abr">Samuka7abr</a> (Samuel Abrão)</td><td>Reverse</td><td>7100</td><td>23</td><td>0</td></tr>
+</table>
 
-- **Evento:** `app.hackincariri.com.br/events/de258172-f35b-4db2-b689-a7369edf8ac4`
-- **Fecha:** 9 de octubre de 2026 · 10:00–15:00 · **Finalizado**
-
-### Resultado
-
-| Equipo | Posición | Puntos | Jugador | Resueltos | First Blood |
-|---|---|---|---|---|---|
-| `nop` | **4º** | 3320 | Felipebc2 (Web3) | 11 | 2 |
-
-### Desafíos
-
-> Las credenciales activas (private keys, cookies de sesión) y los endpoints de infraestructura
-> fueron eliminados/anonimizados (`<HOST>`, `<IP>`, `<RPC>`, `<PORT>`). Se mantienen las flags
-> y la metodología. Estado: ✅ resuelto · 🟡 pendiente.
-
-Las tablas de desafíos (nombres, puntos y estado) están en la sección en inglés más abajo y aplican a todos los idiomas.
+<h3>Desafíos</h3>
+<p>Las credenciales activas (private keys, cookies de sesión) y los endpoints de infraestructura fueron eliminados/anonimizados
+(<code>&lt;HOST&gt;</code>, <code>&lt;IP&gt;</code>, <code>&lt;RPC&gt;</code>, <code>&lt;PORT&gt;</code>). Se mantienen las flags y la metodología.<br>
+Estado: ✅ resuelto · 🟡 pendiente.</p>
+<p>Las tablas de desafíos (nombres, puntos y estado) están en la sección en inglés más abajo y aplican a todos los idiomas.</p>
 
 </details>
 
----
+<hr>
 
-# EKOPARTY 2026 — CTF
-
-Writeups and artifacts for the **EkoParty 2026 CTF** (Hack in Cariri) challenges, Buenos Aires, Argentina.
-
-- **Event:** `app.hackincariri.com.br/events/de258172-f35b-4db2-b689-a7369edf8ac4`
-- **Date:** October 9, 2026 · 10:00–15:00 · **Finished**
-
-## Result
-
-| Team | Rank | Points | Player | Solved | First Blood |
-|---|---|---|---|---|---|
-| `nop` | **4th** | 3320 | Felipebc2 (Web3) | 11 | 2 |
-
-<p align="center">
-  <img src="event.png" alt="EkoParty 2026 — event card" height="300">
+<h1>EKOPARTY 2026 — CTF</h1>
+<p>Writeups and artifacts for the <b>EkoParty 2026 CTF</b> (Hack in Cariri) challenges, Buenos Aires, Argentina.</p>
+<p>
+  <b>Event:</b> <code>app.hackincariri.com.br/events/de258172-f35b-4db2-b689-a7369edf8ac4</code><br>
+  <b>Date:</b> October 9, 2026 · 10:00–15:00 · <b>Finished</b>
 </p>
 
-<p align="center">
-  <img src="profile.png" alt="Felipebc2 profile" width="900">
-</p>
+<h2>Result</h2>
+<table>
+  <tr><th>Team</th><th>Rank</th><th>Player</th><th>Specialty</th><th>Points</th><th>Solved</th><th>First Blood</th></tr>
+  <tr><td rowspan="2"><code>nop</code></td><td rowspan="2"><b>4th</b></td><td><a href="https://github.com/Felipebc2">Felipebc2</a></td><td>Web3</td><td>3320</td><td>11</td><td>2</td></tr>
+  <tr><td><a href="https://github.com/samuka7abr">Samuka7abr</a> (Samuel Abrão)</td><td>Reverse</td><td>7100</td><td>23</td><td>0</td></tr>
+</table>
 
-## Challenges
+<h3>Felipebc2</h3>
+<p><img src="event.png" alt="EkoParty 2026 — Felipebc2 event card" height="300"></p>
+<p><img src="profile.png" alt="Felipebc2 profile" width="900"></p>
 
-> Live credentials (private keys, session cookies) and infrastructure endpoints were
-> removed/anonymized (`<HOST>`, `<IP>`, `<RPC>`, `<PORT>`). Flags and methodology
-> kept. Status: ✅ solved · 🟡 open.
+<h3><a href="https://github.com/samuka7abr">Samuel Abrão</a> — Samuka7abr</h3>
+<p><img src="samuel-event.jpeg" alt="EkoParty 2026 — Samuka7abr event card" height="300"></p>
+<p><img src="samuel-profile.png" alt="Samuka7abr profile" width="900"></p>
 
-### Malware
-| Challenge | Pts | Status |
-|---|---|---|
-| [After Hours](Malware-AfterHours/) | 150 | ✅ |
-| [Build Stamp](Malware-BuildStamp/) | 100 | ✅ |
-| [The Updater](Malware-TheUpdater/) | 200 | ✅ |
-| [After Reboot](Malware-AfterReboot/) | 300 | 🟡 |
-| [Second Object](Malware-SecondObject/) | 250 | 🟡 |
-| [Still Resident](Malware-StillResident/) | 350 | 🟡 |
-| [Garbled Line](Malware-GarbledLine/) | 400 | 🟡 |
-| [New Dialect](Malware-NewDialect/) | 450 | 🟡 |
-| [Open Console](Malware-OpenConsole/) | 500 | 🟡 |
-| [Same Desk](Malware-SameDesk/) | 600 | 🟡 |
+<h2>Challenges</h2>
+<p>Live credentials (private keys, session cookies) and infrastructure endpoints were removed/anonymized
+(<code>&lt;HOST&gt;</code>, <code>&lt;IP&gt;</code>, <code>&lt;RPC&gt;</code>, <code>&lt;PORT&gt;</code>). Flags and methodology kept.<br>
+Status: ✅ solved · 🟡 open.</p>
 
-### Web3
-| Challenge | Pts | Status |
-|---|---|---|
-| [Assembly Floor](Web3-AssemblyFloor/) | 400 | ✅ |
-| [Night Deposit](Web3-NightDeposit/) | 350 | ✅ |
-| [Voucher Window](Web3-VoucherWindow/) | 400 | ✅ |
-| [Maintenance Hatch](Web3-MaintenanceHatch/) | 500 | ✅ |
-| [Carcara Markets](Web3-CarcaraMarkets/) | 450 | 🟡 |
+<h3>Malware</h3>
+<table>
+  <tr><th>Challenge</th><th>Pts</th><th>Status</th></tr>
+  <tr><td><a href="Malware-AfterHours/">After Hours</a></td><td>150</td><td>✅</td></tr>
+  <tr><td><a href="Malware-BuildStamp/">Build Stamp</a></td><td>100</td><td>✅</td></tr>
+  <tr><td><a href="Malware-TheUpdater/">The Updater</a></td><td>200</td><td>✅</td></tr>
+  <tr><td><a href="Malware-AfterReboot/">After Reboot</a></td><td>300</td><td>🟡</td></tr>
+  <tr><td><a href="Malware-SecondObject/">Second Object</a></td><td>250</td><td>🟡</td></tr>
+  <tr><td><a href="Malware-StillResident/">Still Resident</a></td><td>350</td><td>🟡</td></tr>
+  <tr><td><a href="Malware-GarbledLine/">Garbled Line</a></td><td>400</td><td>🟡</td></tr>
+  <tr><td><a href="Malware-NewDialect/">New Dialect</a></td><td>450</td><td>🟡</td></tr>
+  <tr><td><a href="Malware-OpenConsole/">Open Console</a></td><td>500</td><td>🟡</td></tr>
+  <tr><td><a href="Malware-SameDesk/">Same Desk</a></td><td>600</td><td>🟡</td></tr>
+</table>
 
-### Packet / Net
-| Challenge | Pts | Status |
-|---|---|---|
-| [Front Desk](Net-FrontDesk/) | 150 | 🟡 |
-| [Helpdesk](Net-Helpdesk/) | 300 | ✅ |
-| [Duty Roster](Net-DutyRoster/) | 350 | ✅ |
-| [Long Call](Net-LongCall/) | 200 | ✅ |
-| [Background Noise](Net-BackgroundNoise/) | — | 🟡 |
-| [Outbox](Net-Outbox/) | 300 | 🟡 |
-| [Lookup Desk](Net-LookupDesk/) | 300 | 🟡 |
+<h3>Web3</h3>
+<table>
+  <tr><th>Challenge</th><th>Pts</th><th>Status</th></tr>
+  <tr><td><a href="Web3-AssemblyFloor/">Assembly Floor</a></td><td>400</td><td>✅</td></tr>
+  <tr><td><a href="Web3-NightDeposit/">Night Deposit</a></td><td>350</td><td>✅</td></tr>
+  <tr><td><a href="Web3-VoucherWindow/">Voucher Window</a></td><td>400</td><td>✅</td></tr>
+  <tr><td><a href="Web3-MaintenanceHatch/">Maintenance Hatch</a></td><td>500</td><td>✅</td></tr>
+  <tr><td><a href="Web3-CarcaraMarkets/">Carcara Markets</a></td><td>450</td><td>🟡</td></tr>
+</table>
 
-### Reverse
-| Challenge | Pts | Status |
-|---|---|---|
-| [Butterfly Effect](Rev-ButterflyEffect/) | 250 | ✅ |
-| [Clock Watch](Rev-ClockWatch/) | 600 | ✅ |
-| [Wrapped Sample](Rev-WrappedSample/) | 400 | ✅ |
-| [Last Sample](Rev-LastSample/) | 750 | ✅ |
+<h3>Packet / Net</h3>
+<table>
+  <tr><th>Challenge</th><th>Pts</th><th>Status</th></tr>
+  <tr><td><a href="Net-FrontDesk/">Front Desk</a></td><td>150</td><td>🟡</td></tr>
+  <tr><td><a href="Net-Helpdesk/">Helpdesk</a></td><td>300</td><td>✅</td></tr>
+  <tr><td><a href="Net-DutyRoster/">Duty Roster</a></td><td>350</td><td>✅</td></tr>
+  <tr><td><a href="Net-LongCall/">Long Call</a></td><td>200</td><td>✅</td></tr>
+  <tr><td><a href="Net-BackgroundNoise/">Background Noise</a></td><td>—</td><td>🟡</td></tr>
+  <tr><td><a href="Net-Outbox/">Outbox</a></td><td>300</td><td>🟡</td></tr>
+  <tr><td><a href="Net-LookupDesk/">Lookup Desk</a></td><td>300</td><td>🟡</td></tr>
+</table>
 
-### Web
-| Challenge | Pts | Status |
-|---|---|---|
-| [Certificate Exchange](Web-CertificateExchange/) | 200 | ✅ |
-| [My Notes](Web-MyNotes/) | 200 | ✅ |
+<h3>Reverse</h3>
+<table>
+  <tr><th>Challenge</th><th>Pts</th><th>Status</th></tr>
+  <tr><td><a href="Rev-ButterflyEffect/">Butterfly Effect</a></td><td>250</td><td>✅</td></tr>
+  <tr><td><a href="Rev-ClockWatch/">Clock Watch</a></td><td>600</td><td>✅</td></tr>
+  <tr><td><a href="Rev-WrappedSample/">Wrapped Sample</a></td><td>400</td><td>✅</td></tr>
+  <tr><td><a href="Rev-LastSample/">Last Sample</a></td><td>750</td><td>✅</td></tr>
+</table>
 
-### Pwn / Binary Exploitation
-| Challenge | Pts | Status |
-|---|---|---|
-| [First Chall by Binary Gecko](Pwn-BinaryGecko1/) | 200 | 🟡 |
-| [Second Chall by Binary Gecko](Pwn-BinaryGecko2/) | 400 | 🟡 |
-| [ZM.js](Pwn-ZMjs/) | 400 | ✅ |
+<h3>Web</h3>
+<table>
+  <tr><th>Challenge</th><th>Pts</th><th>Status</th></tr>
+  <tr><td><a href="Web-CertificateExchange/">Certificate Exchange</a></td><td>200</td><td>✅</td></tr>
+  <tr><td><a href="Web-MyNotes/">My Notes</a></td><td>200</td><td>✅</td></tr>
+</table>
 
-### Game
-| Challenge | Pts | Status |
-|---|---|---|
-| [Dark Souls](Game-DarkSouls/) | 500 | 🟡 |
+<h3>Pwn / Binary Exploitation</h3>
+<table>
+  <tr><th>Challenge</th><th>Pts</th><th>Status</th></tr>
+  <tr><td><a href="Pwn-BinaryGecko1/">First Chall by Binary Gecko</a></td><td>200</td><td>🟡</td></tr>
+  <tr><td><a href="Pwn-BinaryGecko2/">Second Chall by Binary Gecko</a></td><td>400</td><td>🟡</td></tr>
+  <tr><td><a href="Pwn-ZMjs/">ZM.js</a></td><td>400</td><td>✅</td></tr>
+</table>
 
-<p align="center">
-  <img src="logo.webp" alt="Ekoparty 2026 CTF" height="480">
-</p>
-<p align="center">
+<h3>Game</h3>
+<table>
+  <tr><th>Challenge</th><th>Pts</th><th>Status</th></tr>
+  <tr><td><a href="Game-DarkSouls/">Dark Souls</a></td><td>500</td><td>🟡</td></tr>
+</table>
+
+<p><img src="logo.webp" alt="Ekoparty 2026 CTF" height="480"></p>
+
 <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&duration=700&pause=1000&color=F7009F&center=true&vCenter=true&repeat=false&width=300&height=35&lines=2026+CTF+" alt="Typing SVG" /></a>
-</p>
+
+</div>
